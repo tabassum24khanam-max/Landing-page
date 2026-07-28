@@ -114,7 +114,21 @@
 
   /* ------------------------------------------------------------ capture */
   var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
-  var ENDPOINT = window.ULTRAMAX_ENDPOINT || 'api/subscribe';
+
+  /* Where a submission is sent.
+     The destination lives in each form's `action` so there is one source of
+     truth: without JS the browser posts there natively, and with JS we post to
+     the same service's AJAX variant so the page can show its own success state
+     instead of navigating away. Override everything with
+     window.ULTRAMAX_ENDPOINT if you move to a different provider. */
+  function endpointFor(form) {
+    if (window.ULTRAMAX_ENDPOINT) return window.ULTRAMAX_ENDPOINT;
+    var action = form.getAttribute('action') || '';
+    if (action.indexOf('formsubmit.co/') !== -1 && action.indexOf('/ajax/') === -1) {
+      return action.replace('formsubmit.co/', 'formsubmit.co/ajax/');
+    }
+    return action || 'api/subscribe';
+  }
 
   $$('[data-capture]').forEach(function (form) {
     var input = form.querySelector('input[type="email"]');
@@ -169,14 +183,17 @@
       button.classList.add('is-busy');
       setNote('Submitting…', null);
 
-      var payload = {
-        email: email,
-        message: message ? message.value.trim() : '',
-        source: form.getAttribute('data-source') || 'unknown',
-        company_website: honeypot ? honeypot.value : ''
-      };
+      /* Send every field the form declares, so the hidden _subject/_template
+         instructions reach the mail service exactly as the no-JS path would. */
+      var payload = {};
+      new FormData(form).forEach(function (value, key) { payload[key] = value; });
+      payload.email = email;
+      payload.source = form.getAttribute('data-source') || payload.source || 'unknown';
+      if (message) payload.message = message.value.trim();
 
-      fetch(ENDPOINT, {
+      var endpoint = endpointFor(form);
+
+      fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -189,19 +206,29 @@
         .then(function (res) {
           button.classList.remove('is-busy');
 
-          if (!res.ok) {
+          var body = res.body || {};
+
+          /* The mail service answers 200 with success:"false" for its own
+             failures (e.g. address not yet confirmed), so a 2xx alone isn't
+             proof of delivery — check the flag when it's present. */
+          var flagged = Object.prototype.hasOwnProperty.call(body, 'success');
+          var succeeded = res.ok && (!flagged || String(body.success) === 'true');
+
+          if (!succeeded) {
             if (res.status === 429) {
               setNote('Too many attempts. Try again in a few minutes.', 'error');
               return;
             }
-            if (res.body && res.body.error) {
-              setNote(res.body.error, 'error');
+            if (body.error) { setNote(body.error, 'error'); return; }
+            if (flagged && body.message) {
+              console.warn('ULTRAMAX: submission rejected by ' + endpoint + ' — ' + body.message);
+              setNote('That didn’t go through. Please try again, or email us directly.', 'error');
               return;
             }
             console.warn(
-              'ULTRAMAX: no signup endpoint at "' + ENDPOINT + '" (HTTP ' + res.status + '). ' +
-              'This page is likely on a static host. Run server.js somewhere that supports ' +
-              'Node, or set window.ULTRAMAX_ENDPOINT to a hosted form service.'
+              'ULTRAMAX: no signup endpoint at "' + endpoint + '" (HTTP ' + res.status + '). ' +
+              'This page is likely on a static host with nothing listening. Point the form ' +
+              'action at a mail service, or set window.ULTRAMAX_ENDPOINT.'
             );
             setNote('Signups aren’t connected on this address yet.', 'error');
             return;
@@ -210,8 +237,12 @@
           if (success) {
             var emailSlot = success.querySelector('[data-success-email]');
             var refSlot = success.querySelector('[data-success-ref]');
+            var refLine = success.querySelector('.success__ref');
             if (emailSlot) emailSlot.textContent = email;
-            if (refSlot) refSlot.textContent = (res.body && res.body.ref) || '—';
+            /* Only self-hosted server.js issues reference codes; hide the line
+               entirely rather than showing an empty placeholder. */
+            if (body.ref && refSlot) refSlot.textContent = body.ref;
+            else if (refLine) refLine.hidden = true;
             form.classList.add('is-done');
             success.hidden = false;
           } else {
