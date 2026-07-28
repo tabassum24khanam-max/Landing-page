@@ -314,7 +314,12 @@
 
   /* ------------------------------------------------------------ capture */
   var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
-  var ENDPOINT = '/api/subscribe';
+
+  /* Where signups are sent. Relative, so the page works both at a domain root
+     and in a subfolder (e.g. GitHub Pages project sites).
+     To point signups at a hosted form service instead, set
+     window.NOCTURNE_ENDPOINT in index.html before this script loads. */
+  var ENDPOINT = window.NOCTURNE_ENDPOINT || 'api/subscribe';
 
   $$('[data-capture]').forEach(function (form) {
     var input = form.querySelector('input[type="email"]');
@@ -386,11 +391,25 @@
           button.classList.remove('is-busy');
 
           if (!res.ok) {
-            var msg = (res.body && res.body.error)
-              || (res.status === 429
-                    ? 'Too many attempts. Try again in a few minutes.'
-                    : 'Something went wrong on our end. Please try again.');
-            setNote(msg, 'error');
+            if (res.status === 429) {
+              setNote('Too many attempts. Try again in a few minutes.', 'error');
+              return;
+            }
+            if (res.body && res.body.error) {
+              setNote(res.body.error, 'error');
+              return;
+            }
+            /* No JSON error body means nothing is listening on ENDPOINT — the
+               page is on a static host (GitHub Pages, S3, plain object
+               storage). Those answer POST with 403/404/405/501 depending on
+               the host, so don't enumerate codes. Say so plainly rather than
+               blaming the visitor for a deployment gap. */
+            console.warn(
+              'Nocturne: no signup endpoint at "' + ENDPOINT + '" (HTTP ' + res.status + '). ' +
+              'This page is on a static host. Run server.js somewhere that supports Node, ' +
+              'or set window.NOCTURNE_ENDPOINT to a hosted form service.'
+            );
+            setNote('Signups aren’t connected on this address yet.', 'error');
             return;
           }
 

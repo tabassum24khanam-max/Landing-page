@@ -7,13 +7,13 @@
 <meta name="description" content="Nocturne is an autonomous market intelligence system. It continuously analyses market data and makes decisions on its own, so you don't have to learn charts, indicators or market psychology. Give it your money. Go to sleep.">
 <meta name="theme-color" content="#ffffff">
 <meta name="color-scheme" content="light">
-<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
-<link rel="preload" href="/assets/css/main.css" as="style">
-<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="assets/css/main.css" as="style">
+<link rel="stylesheet" href="assets/css/main.css">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Nocturne — Autonomous Market Intelligence">
 <meta property="og:description" content="Give it your money. Go to sleep.">
-<script defer src="/assets/js/main.js"></script>
+<script defer src="assets/js/main.js"></script>
 <noscript><style>
   /* Without JS nothing reveals itself, so show the finished state directly. */
   [data-reveal] { opacity: 1 !important; transform: none !important; }
@@ -86,7 +86,7 @@
     </p>
 
     <form class="capture capture--hero" data-capture data-source="hero" novalidate data-reveal style="--d:.38s"
-          action="/api/subscribe" method="post">
+          action="api/subscribe" method="post">
       <div class="capture__row">
         <div class="field">
           <label class="sr-only" for="hero-email">Email address</label>
@@ -842,7 +842,7 @@
 
       <div class="beta__form" data-reveal style="--d:.14s">
         <form class="capture capture--full" data-capture data-source="beta" novalidate
-              action="/api/subscribe" method="post">
+              action="api/subscribe" method="post">
           <div class="field field--block">
             <label class="field__label" for="beta-email">Email address</label>
             <input class="field__input" id="beta-email" name="email" type="email"

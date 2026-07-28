@@ -25,6 +25,31 @@ PORT=8080 node server.js
 
 Node 18+. There is nothing to install.
 
+## Putting it online
+
+`.github/workflows/pages.yml` publishes the page to GitHub Pages on every push
+to `main`. It switches Pages on by itself the first time it runs, so there is
+nothing to configure. The address is:
+
+```
+https://<your-username>.github.io/Landing-page/
+```
+
+All paths in `index.html` are relative, so the page works both at a domain root
+and in a project subfolder like the one above.
+
+**GitHub Pages cannot run the signup endpoint.** Pages serves static files only,
+so `server.js` never runs there and the form has nothing to post to — it will
+say "Signups aren't connected on this address yet." To collect email addresses
+you need one of:
+
+- **A host that runs Node** (Render, Railway, Fly, a VPS). Deploy the repository,
+  run `node server.js`, and everything works as it does locally — this is the
+  only option that keeps submissions on infrastructure you control.
+- **A hosted form service.** Set `window.NOCTURNE_ENDPOINT` in `index.html`
+  before `main.js` loads, pointing at the service's URL. The page keeps its
+  validation, loading and success states; only the destination changes.
+
 ## Signup endpoint
 
 `POST /api/subscribe` accepts either JSON (what the page sends via `fetch`) or
