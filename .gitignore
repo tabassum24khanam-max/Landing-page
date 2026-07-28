@@ -1,0 +1,13 @@
+# Signup records — never commit these
+data/
+*.jsonl
+
+# Environment
+.env
+.env.*
+
+node_modules/
+npm-debug.log*
+
+.DS_Store
+Thumbs.db

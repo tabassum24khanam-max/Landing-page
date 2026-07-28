@@ -1,0 +1,15 @@
+{
+  "name": "nocturne-landing",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Landing page and beta-signup endpoint for Nocturne, an autonomous market intelligence system.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "UNLICENSED"
+}
