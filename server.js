@@ -1,5 +1,5 @@
 /* ============================================================================
-   Nocturne — static host + beta signup endpoint
+   ULTRAMAX — static host + beta signup endpoint
    Zero dependencies. Node 18+.
 
      node server.js                 # http://localhost:3000
@@ -162,11 +162,11 @@ function sendHtml(res, status, title, body) {
   const page = Buffer.from(`<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${escapeHtml(title)} — Nocturne</title>
+<title>${escapeHtml(title)} — ULTRAMAX</title>
 <link rel="stylesheet" href="/assets/css/main.css">
 </head><body>
 <main class="wrap" style="padding-block:18vh;max-width:640px">
-  <p class="kicker"><span class="mono">—</span> Nocturne</p>
+  <p class="kicker"><span class="mono">—</span> ULTRAMAX</p>
   <h1 class="h2">${escapeHtml(title)}</h1>
   <p class="lede">${escapeHtml(body)}</p>
   <p style="margin-top:36px"><a class="btn btn--ghost" href="/">Back to the site</a></p>
@@ -210,7 +210,7 @@ async function handleSubscribe(req, res) {
 
   // Honeypot: silently accept so bots don't learn they were caught.
   if (typeof payload.company_website === 'string' && payload.company_website.trim()) {
-    const decoy = 'NB-' + hash(String(Date.now())).slice(0, 6).toUpperCase();
+    const decoy = 'UMX-' + hash(String(Date.now())).slice(0, 6).toUpperCase();
     return isForm
       ? sendHtml(res, 200, 'You’re on the list.', 'We’ll email you when a seat opens.')
       : sendJson(res, 200, { ok: true, ref: decoy });
@@ -227,7 +227,7 @@ async function handleSubscribe(req, res) {
 
   const message = String(payload.message || '').trim().slice(0, MAX_MESSAGE);
   const source = String(payload.source || 'unknown').trim().slice(0, 32);
-  const ref = 'NB-' + crypto.randomBytes(3).toString('hex').toUpperCase();
+  const ref = 'UMX-' + crypto.randomBytes(3).toString('hex').toUpperCase();
 
   const record = {
     email,
@@ -359,7 +359,7 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, HOST, () => {
-  console.log(`Nocturne listening on http://localhost:${PORT}`);
+  console.log(`ULTRAMAX listening on http://localhost:${PORT}`);
   console.log(`Submissions → ${STORE}`);
   if (EMAIL_ENDPOINT) console.log(`Forwarding  → ${EMAIL_ENDPOINT}`);
 });

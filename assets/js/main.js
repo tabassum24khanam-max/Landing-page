@@ -1,6 +1,6 @@
 /* ============================================================================
-   Nocturne — landing page behaviour
-   No dependencies. Everything degrades to a working static page.
+   ULTRAMAX — landing page behaviour
+   No dependencies. Degrades to a working static page without JS.
    ========================================================================= */
 (function () {
   'use strict';
@@ -11,34 +11,10 @@
   function $(sel, root) { return (root || document).querySelector(sel); }
   function $$(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
 
-  /* ------------------------------------------------------------ index hint
-     Stagger helpers read --i, so number the children once up front.        */
-  function indexChildren(selector) {
-    $$(selector).forEach(function (group) {
-      Array.prototype.forEach.call(group.children, function (child, i) {
-        child.style.setProperty('--i', i);
-      });
-    });
-  }
-  indexChildren('.bars, .dots, .healthbars, .dtable tbody, .gauges, .ticklist--off');
-
-  /* ------------------------------------------------------------ svg draw
-     Measure each animated path so the dash animation is length-correct.    */
-  $$('.draw').forEach(function (path) {
-    var len;
-    try { len = path.getTotalLength(); } catch (e) { len = 0; }
-    if (len) {
-      path.style.setProperty('--len', Math.ceil(len));
-      path.style.strokeDasharray = Math.ceil(len);
-      path.style.strokeDashoffset = reduced ? 0 : Math.ceil(len);
-    }
-  });
-
   /* ------------------------------------------------------------ reveal */
-  var revealTargets = $$('[data-reveal], [data-flow], [data-dash]');
-
+  var revealTargets = $$('[data-reveal]');
   if (!('IntersectionObserver' in window)) {
-    revealTargets.forEach(function (el) { el.classList.add('is-in', 'is-live'); });
+    revealTargets.forEach(function (el) { el.classList.add('is-in'); });
   } else {
     var revealObserver = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
@@ -46,289 +22,112 @@
         entry.target.classList.add('is-in');
         revealObserver.unobserve(entry.target);
       });
-    }, { rootMargin: '0px 0px -12% 0px', threshold: 0.08 });
-
+    }, { rootMargin: '0px 0px -10% 0px', threshold: 0.08 });
     revealTargets.forEach(function (el) { revealObserver.observe(el); });
-
-    /* Looping animations only run while their figure is actually on screen. */
-    var liveObserver = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        entry.target.classList.toggle('is-live', entry.isIntersecting);
-      });
-    }, { rootMargin: '120px 0px' });
-
-    $$('[data-flow]').forEach(function (el) { liveObserver.observe(el); });
   }
 
-  /* ------------------------------------------------------------ nav */
-  var nav = $('#nav');
-  var progress = $('#progress');
-  var navTicking = false;
+  /* ------------------------------------------------------------ desk feed
+     A scripted, looping transcript of the four agents reasoning together.
+     Purely illustrative — not a log of real trades. Pauses off screen. */
+  (function feed() {
+    var term = $('[data-feed]');
+    var list = $('[data-feed-list]', term);
+    if (!term || !list) return;
 
-  function onScroll() {
-    if (navTicking) return;
-    navTicking = true;
-    raf(function () {
-      var y = window.pageYOffset || document.documentElement.scrollTop;
-      nav.classList.toggle('is-stuck', y > 8);
+    var SCRIPT = [
+      { tag: 'ANALYST', html: 'RSI(14) 61.8 · MACD bullish cross · vol regime <b>NORMAL</b>' },
+      { tag: 'ANALYST', html: 'Bull case: momentum + volume confirm. Counter-argument: resistance overhead.' },
+      { tag: 'INTEL',   html: '17 headlines scanned · 1 dominant catalyst identified' },
+      { tag: 'INTEL',   html: 'Catalyst assessment: <b>not yet priced in</b> · direction: bullish' },
+      { tag: 'INTEL',   html: 'Options flow: elevated call volume, non-standard size' },
+      { tag: 'JUDGE',   html: 'Risk officer notes reviewed — no correlated exposure open', accent: true },
+      { tag: 'JUDGE',   html: 'Vote 1/3 LONG · vote 2/3 LONG · vote 3/3 HOLD → majority LONG', accent: true },
+      { tag: 'JUDGE',   html: 'Sizing set from conviction, not enthusiasm. Ruling logged.', accent: true },
+      { tag: 'RISK',    html: 'Trailing stop armed · breakeven lock queued · correlation veto: clear' },
+      { tag: 'SENTRY',  html: 'Watching · 10s interval · directional threshold not met' },
+      { tag: 'ANALYST', html: 'Regime re-check: volatility contracting, no reclassification' },
+      { tag: 'INTEL',   html: 'No new high-impact filings in the last cycle' },
+      { tag: 'JUDGE',   html: 'Prior call on this asset: 2 of last 3 correct — weighted accordingly', accent: true },
+      { tag: 'RISK',    html: 'Time-decaying stop tightened on open short elsewhere in book' },
+    ];
 
-      var doc = document.documentElement;
-      var max = doc.scrollHeight - window.innerHeight;
-      var pct = max > 0 ? Math.min(1, y / max) : 0;
-      progress.style.width = (pct * 100).toFixed(2) + '%';
+    var i = 0;
+    var MAX_LINES = 7;
 
-      navTicking = false;
-    });
-  }
-  window.addEventListener('scroll', onScroll, { passive: true });
-  onScroll();
+    function pushLine() {
+      var item = SCRIPT[i % SCRIPT.length];
+      i++;
 
-  /* ------------------------------------------------------------ counters */
-  function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+      var li = document.createElement('li');
+      li.className = 'feed__line';
+      var tagClass = item.accent ? 'feed__tag feed__tag--judge' : 'feed__tag';
+      li.innerHTML = '<span class="' + tagClass + '">[' + item.tag + ']</span> ' + item.html;
+      list.appendChild(li);
 
-  function runCount(el) {
-    var target = parseFloat(el.getAttribute('data-count'));
-    var decimals = parseInt(el.getAttribute('data-decimals') || '0', 10);
-    if (isNaN(target)) return;
+      while (list.children.length > MAX_LINES) {
+        list.removeChild(list.firstElementChild);
+      }
+      term.querySelector('.term__body').scrollTop = 999999;
+    }
+
+    var timer = null;
+    function start() {
+      if (timer || reduced) return;
+      if (!list.children.length) {
+        for (var n = 0; n < 5; n++) pushLine();
+      }
+      timer = setInterval(pushLine, 1900);
+    }
+    function stop() {
+      if (timer) { clearInterval(timer); timer = null; }
+    }
 
     if (reduced) {
-      el.textContent = format(target, decimals);
+      for (var n = 0; n < 5; n++) pushLine();
       return;
     }
 
-    var start = performance.now();
-    var dur = 1400;
-
-    function frame(now) {
-      var t = Math.min(1, (now - start) / dur);
-      el.textContent = format(target * easeOutCubic(t), decimals);
-      if (t < 1) raf(frame);
-    }
-    raf(frame);
-  }
-
-  function format(n, decimals) {
-    return decimals > 0
-      ? n.toFixed(decimals)
-      : Math.round(n).toLocaleString('en-US');
-  }
-
-  var counters = $$('[data-count]');
-  if (counters.length) {
-    if (!('IntersectionObserver' in window)) {
-      counters.forEach(runCount);
-    } else {
-      var countObserver = new IntersectionObserver(function (entries) {
-        entries.forEach(function (entry) {
-          if (!entry.isIntersecting) return;
-          runCount(entry.target);
-          countObserver.unobserve(entry.target);
-        });
-      }, { threshold: 0.6 });
-      counters.forEach(function (el) { countObserver.observe(el); });
-    }
-  }
-
-  /* ------------------------------------------------------------ hero lattice
-     A quiet market lattice: hairline grid, one drifting series, one head dot.
-     Costs a few hundred ops per frame and stops entirely when off screen.  */
-  (function lattice() {
-    var canvas = $('#lattice');
-    if (!canvas) return;
-
-    var ctx = canvas.getContext('2d', { alpha: true });
-    if (!ctx) return;
-
-    var dpr = Math.min(window.devicePixelRatio || 1, 2);
-    var w = 0, h = 0;
-    var running = false;
-    var visible = true;
-    var t = 0;
-
-    // deterministic pseudo-noise so the curve is stable across resizes
-    function noise(x) {
-      return (
-        Math.sin(x * 0.7) * 0.5 +
-        Math.sin(x * 1.9 + 1.3) * 0.28 +
-        Math.sin(x * 4.1 + 2.7) * 0.14 +
-        Math.sin(x * 8.3 + 0.6) * 0.07
-      );
-    }
-
-    function resize() {
-      var rect = canvas.getBoundingClientRect();
-      w = Math.max(1, Math.round(rect.width));
-      h = Math.max(1, Math.round(rect.height));
-      canvas.width = Math.round(w * dpr);
-      canvas.height = Math.round(h * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      draw();
-    }
-
-    function draw() {
-      ctx.clearRect(0, 0, w, h);
-
-      var step = 88;
-
-      // grid
-      ctx.lineWidth = 1;
-      ctx.strokeStyle = '#f1efec';
-      ctx.beginPath();
-      for (var x = (w % step) / 2; x < w; x += step) {
-        ctx.moveTo(Math.round(x) + 0.5, 0);
-        ctx.lineTo(Math.round(x) + 0.5, h);
-      }
-      for (var y = (h % step) / 2; y < h; y += step) {
-        ctx.moveTo(0, Math.round(y) + 0.5);
-        ctx.lineTo(w, Math.round(y) + 0.5);
-      }
-      ctx.stroke();
-
-      // series
-      var baseY = h * 0.62;
-      var amp = Math.min(h * 0.17, 150);
-      var pts = [];
-      var cols = Math.ceil(w / 8) + 1;
-
-      for (var i = 0; i <= cols; i++) {
-        var px = i * 8;
-        var n = noise(px * 0.0055 + t);
-        pts.push([px, baseY - n * amp]);
-      }
-
-      // faint fill under the curve
-      ctx.beginPath();
-      ctx.moveTo(pts[0][0], pts[0][1]);
-      for (var j = 1; j < pts.length; j++) ctx.lineTo(pts[j][0], pts[j][1]);
-      ctx.lineTo(w, h);
-      ctx.lineTo(0, h);
-      ctx.closePath();
-      ctx.fillStyle = 'rgba(194, 65, 12, 0.028)';
-      ctx.fill();
-
-      // curve
-      ctx.beginPath();
-      ctx.moveTo(pts[0][0], pts[0][1]);
-      for (var k = 1; k < pts.length; k++) ctx.lineTo(pts[k][0], pts[k][1]);
-      ctx.strokeStyle = 'rgba(11, 11, 12, 0.20)';
-      ctx.lineWidth = 1.25;
-      ctx.stroke();
-
-      // secondary, slower series
-      ctx.beginPath();
-      for (var m = 0; m <= cols; m++) {
-        var mx = m * 8;
-        var my = baseY - noise(mx * 0.0031 + t * 0.45) * amp * 0.55 + 64;
-        if (m === 0) ctx.moveTo(mx, my); else ctx.lineTo(mx, my);
-      }
-      ctx.strokeStyle = 'rgba(11, 11, 12, 0.085)';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-
-      // head marker on the primary series
-      var head = pts[pts.length - 1];
-      ctx.beginPath();
-      ctx.arc(head[0] - 2, head[1], 2.6, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(194, 65, 12, 0.75)';
-      ctx.fill();
-    }
-
-    function loop() {
-      if (!running) return;
-      t += 0.0016;
-      draw();
-      raf(loop);
-    }
-
-    function start() {
-      if (running || reduced || !visible) return;
-      running = true;
-      raf(loop);
-    }
-    function stop() { running = false; }
-
-    // only animate while the hero is on screen and the tab is focused
     if ('IntersectionObserver' in window) {
       new IntersectionObserver(function (entries) {
-        visible = entries[0].isIntersecting;
-        visible ? start() : stop();
-      }, { threshold: 0 }).observe(canvas);
+        entries[0].isIntersecting ? start() : stop();
+      }, { threshold: 0 }).observe(term);
+    } else {
+      start();
     }
     document.addEventListener('visibilitychange', function () {
       document.hidden ? stop() : start();
     });
-
-    var resizeTimer;
-    window.addEventListener('resize', function () {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(resize, 140);
-    }, { passive: true });
-
-    resize();
-    canvas.classList.add('is-on');
-    start();
   })();
 
-  /* ------------------------------------------------------------ dashboard life */
-  (function dashboard() {
-    var clock = $('[data-clock]');
-    var ticker = $('[data-tick]');
-    var countdown = $('[data-countdown]');
-    if (!clock && !ticker && !countdown) return;
-
-    function pad(n) { return n < 10 ? '0' + n : '' + n; }
-
-    if (clock) {
-      (function tickClock() {
-        var d = new Date();
-        clock.textContent = pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
-        setTimeout(tickClock, 1000);
-      })();
-    }
-
-    if (ticker && !reduced) {
-      var base = parseFloat(ticker.getAttribute('data-tick'));
-      var range = parseFloat(ticker.getAttribute('data-tick-range') || '100');
-      var current = base;
-      setInterval(function () {
-        current += (Math.random() - 0.48) * range;
-        if (Math.abs(current - base) > range * 4) current = base;
-        ticker.textContent = current.toLocaleString('en-US', {
-          minimumFractionDigits: 2, maximumFractionDigits: 2
-        });
-      }, 2600);
-    }
-
-    if (countdown) {
-      var parts = countdown.textContent.split(':').map(Number);
-      var secs = (parts[0] * 3600) + (parts[1] * 60) + parts[2];
-      setInterval(function () {
-        secs = secs > 0 ? secs - 1 : 900;
-        countdown.textContent =
-          pad(Math.floor(secs / 3600)) + ':' +
-          pad(Math.floor((secs % 3600) / 60)) + ':' +
-          pad(secs % 60);
-      }, 1000);
-    }
+  /* ------------------------------------------------------------ direct mail
+     Points "email us directly" at a real inbox without exposing it to
+     scraping in the raw page source. Change the address in one place. */
+  (function directMail() {
+    var link = $('#direct-mail');
+    if (!link) return;
+    var user = 'azk40772corp', domain = 'gmail.com';
+    var address = user + '@' + domain;
+    link.href = 'mailto:' + address + '?subject=' + encodeURIComponent('ULTRAMAX early access');
+    var label = $('[data-direct-mail-label]', link);
+    if (label) label.textContent = 'or email us directly — ' + address;
   })();
 
   /* ------------------------------------------------------------ capture */
   var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
-
-  /* Where signups are sent. Relative, so the page works both at a domain root
-     and in a subfolder (e.g. GitHub Pages project sites).
-     To point signups at a hosted form service instead, set
-     window.NOCTURNE_ENDPOINT in index.html before this script loads. */
-  var ENDPOINT = window.NOCTURNE_ENDPOINT || 'api/subscribe';
+  var ENDPOINT = window.ULTRAMAX_ENDPOINT || 'api/subscribe';
 
   $$('[data-capture]').forEach(function (form) {
     var input = form.querySelector('input[type="email"]');
     var message = form.querySelector('textarea');
     var honeypot = form.querySelector('.hp');
     var button = form.querySelector('button[type="submit"]');
-    var note = form.querySelector('[data-status]');
+    /* The status note and success panel aren't always inside the form
+       itself (the strip's note sits beside it, not within it), so look in
+       the nearest container that groups the whole widget together. */
+    var scope = form.closest('.strip, .signup__form') || form;
+    var note = scope.querySelector('[data-status]');
     var defaultNote = note ? note.textContent : '';
-    var success = form.parentElement.querySelector('[data-success]');
+    var success = scope.querySelector('[data-success]');
 
     function setNote(text, kind) {
       if (!note) return;
@@ -343,7 +142,8 @@
     }
 
     input.addEventListener('input', function () {
-      if (input.closest('.field').classList.contains('is-invalid')) {
+      var field = input.closest('.field');
+      if (field && field.classList.contains('is-invalid')) {
         markInvalid(false);
         setNote(defaultNote, null);
       }
@@ -354,7 +154,6 @@
       if (button.classList.contains('is-busy')) return;
 
       var email = input.value.trim();
-
       if (!email) {
         markInvalid(true); input.focus();
         setNote('An email address is required.', 'error');
@@ -362,7 +161,7 @@
       }
       if (!EMAIL_RE.test(email)) {
         markInvalid(true); input.focus();
-        setNote('That address doesn’t look right. Check it and try again.', 'error');
+        setNote('That address doesn’t look right.', 'error');
         return;
       }
 
@@ -399,15 +198,10 @@
               setNote(res.body.error, 'error');
               return;
             }
-            /* No JSON error body means nothing is listening on ENDPOINT — the
-               page is on a static host (GitHub Pages, S3, plain object
-               storage). Those answer POST with 403/404/405/501 depending on
-               the host, so don't enumerate codes. Say so plainly rather than
-               blaming the visitor for a deployment gap. */
             console.warn(
-              'Nocturne: no signup endpoint at "' + ENDPOINT + '" (HTTP ' + res.status + '). ' +
-              'This page is on a static host. Run server.js somewhere that supports Node, ' +
-              'or set window.NOCTURNE_ENDPOINT to a hosted form service.'
+              'ULTRAMAX: no signup endpoint at "' + ENDPOINT + '" (HTTP ' + res.status + '). ' +
+              'This page is likely on a static host. Run server.js somewhere that supports ' +
+              'Node, or set window.ULTRAMAX_ENDPOINT to a hosted form service.'
             );
             setNote('Signups aren’t connected on this address yet.', 'error');
             return;
@@ -422,7 +216,8 @@
             success.hidden = false;
           } else {
             input.value = '';
-            setNote('You’re on the list. We’ll email you when a seat opens.', 'ok');
+            if (message) message.value = '';
+            setNote('You’re on the list. We’ll email you when access opens.', 'ok');
           }
         })
         .catch(function () {

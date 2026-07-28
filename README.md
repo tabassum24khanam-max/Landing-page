@@ -1,7 +1,8 @@
-# Nocturne — landing page
+# ULTRAMAX — landing page
 
-Single-purpose landing page for an autonomous market intelligence system. One
-objective: collect email addresses for the private beta.
+Single-purpose landing page for ULTRAMAX, an autonomous multi-agent trading
+system currently in paper trading. One objective: collect email addresses for
+early access.
 
 Plain HTML, CSS and JavaScript. No frameworks, no build step, no external
 requests — no webfonts, no CDNs, no analytics. The only runtime dependency is
@@ -10,7 +11,7 @@ Node itself, for the signup endpoint.
 ```
 index.html            the page
 assets/css/main.css   all styling
-assets/js/main.js     reveal, counters, hero canvas, form handling
+assets/js/main.js     reveal, live desk feed, form handling
 assets/favicon.svg
 server.js             static host + POST /api/subscribe
 data/                 submissions (created at runtime, git-ignored)
@@ -46,7 +47,7 @@ you need one of:
 - **A host that runs Node** (Render, Railway, Fly, a VPS). Deploy the repository,
   run `node server.js`, and everything works as it does locally — this is the
   only option that keeps submissions on infrastructure you control.
-- **A hosted form service.** Set `window.NOCTURNE_ENDPOINT` in `index.html`
+- **A hosted form service.** Set `window.ULTRAMAX_ENDPOINT` in `index.html`
   before `main.js` loads, pointing at the service's URL. The page keeps its
   validation, loading and success states; only the destination changes.
 
@@ -58,10 +59,10 @@ off) and answers in the dialect it was asked in.
 
 ```jsonc
 // request
-{ "email": "you@company.com", "message": "optional", "source": "beta" }
+{ "email": "you@company.com", "message": "optional", "source": "signup" }
 
 // response
-{ "ok": true, "ref": "NB-4F2A91" }
+{ "ok": true, "ref": "UMX-4F2A91" }
 ```
 
 Submissions are appended as JSON Lines to `data/submissions.jsonl`:
@@ -70,11 +71,11 @@ Submissions are appended as JSON Lines to `data/submissions.jsonl`:
 {
   "email": "you@company.com",
   "message": "optional",
-  "source": "hero" | "beta",
+  "source": "strip" | "signup",
   "timestamp": "2026-07-28T09:41:02.184Z",
   "ip_hash": "…",           // salted, truncated — for rate limiting only
   "user_agent": "…",
-  "ref": "NB-4F2A91"
+  "ref": "UMX-4F2A91"
 }
 ```
 
@@ -86,7 +87,7 @@ git-ignored. Raw IP addresses are never written — only a salted hash.
 Set two environment variables and every submission is forwarded on:
 
 ```bash
-EMAIL_ENDPOINT=https://your-service.example/hooks/beta
+EMAIL_ENDPOINT=https://your-service.example/hooks/access
 EMAIL_ENDPOINT_TOKEN=…        # optional, sent as Authorization: Bearer
 ```
 
@@ -110,31 +111,41 @@ hashes cannot be correlated across restarts.
 
 ## Design notes
 
-- **Palette.** White background, near-black text, warm greys, and a single
-  restrained accent — burnt copper `#C2410C`, used only for interactive and
-  live elements. Change `--accent` in `assets/css/main.css` to reskin.
-- **Naming.** The product is called *Nocturne* throughout. To rename, edit the
+- **Palette.** Near-black background, off-white text, warm greys, and a single
+  restrained amber accent (`#EAA631`) used only for interactive and live
+  elements — a professional-terminal look, not a crypto one. Change `--accent`
+  in `assets/css/main.css` to reskin.
+- **Naming.** The product is called *ULTRAMAX* throughout. To rename, edit the
   `.mark__word` spans in `index.html` plus the `<title>` and meta description.
-- **Numbers** are monospace with tabular figures so they don't jitter as they
-  animate or tick.
-- **Motion** is driven by two `IntersectionObserver`s: one reveals on entry
-  (fires once), one pauses looping figure animations while their figure is off
-  screen. The hero canvas stops on scroll-away and on tab blur.
-- **All figures are hand-authored SVG.** The dashboard is real HTML, not an
-  image, so it stays sharp and reflows on small screens.
+- **The "direct mail" address** is set in one place: the `directMail()`
+  function near the top of `assets/js/main.js`. It's assembled from two string
+  parts rather than written as a literal `mailto:` link, so it isn't handed to
+  scrapers as plain text in the page source.
+- **The live desk feed** in the hero (`.term`) is a scripted, looping
+  transcript — clearly illustrative, not a log of real trades. It pauses when
+  scrolled off screen or the tab is hidden, and shows a static excerpt instead
+  of animating under `prefers-reduced-motion: reduce`.
+- **Layout is deliberately compressed** — one continuous "how it works / why
+  trust it" section rather than two, and the risk-layer mechanisms sit in a
+  two-column grid instead of a long list. This trades some breathing room for
+  fewer scrolls; if you want more air, raise the `--pad`/section `padding-block`
+  values in `main.css` back up.
 
 ## Accessibility and resilience
 
-- `prefers-reduced-motion: reduce` removes every transition, loop and canvas
-  animation, leaving the finished state.
+- `prefers-reduced-motion: reduce` removes every transition and freezes the
+  desk feed on its first few lines instead of animating them in.
 - With JavaScript disabled a `<noscript>` block reveals all content and the
   forms fall back to a native POST that the server answers in HTML.
-- Diagrams carry `role="img"` and descriptive labels; the decision log is a real
-  `<table>` with header scope; there is a skip link and a visible focus ring.
+- There is a skip link and a visible focus ring throughout.
 
 ## Content honesty
 
-Every figure on the page is either a product specification (latency, instrument
-count, decision cadence) or an explicitly labelled illustrative interface value.
-There are no performance claims, returns, or backtest results anywhere, and the
-footer carries a plain-language risk disclaimer. Keep it that way.
+This page makes no profit, return, or win-rate claims anywhere — none of that
+is established for a system currently in paper trading, and inventing it would
+be false. The only numbers on the page are product facts (35+ indicators, 10+
+news sources, a 10-second sentry interval, 3-vote majority) or figures
+explicitly labelled illustrative (the real-vs-headline equity bars, the
+forensic-log excerpt). The footer states plainly that this is paper trading and
+that nothing here is financial advice. Keep it that way — don't add performance
+figures later without the same care.
