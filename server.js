@@ -209,7 +209,10 @@ async function handleSubscribe(req, res) {
   }
 
   // Honeypot: silently accept so bots don't learn they were caught.
-  if (typeof payload.company_website === 'string' && payload.company_website.trim()) {
+  // `_honey` is the field name the hosted mail service expects; the older
+  // `company_website` is still honoured so existing clients keep working.
+  const trap = payload._honey || payload.company_website;
+  if (typeof trap === 'string' && trap.trim()) {
     const decoy = 'UMX-' + hash(String(Date.now())).slice(0, 6).toUpperCase();
     return isForm
       ? sendHtml(res, 200, 'You’re on the list.', 'We’ll email you when a seat opens.')
