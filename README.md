@@ -39,17 +39,38 @@ https://<your-username>.github.io/Landing-page/
 All paths in `index.html` are relative, so the page works both at a domain root
 and in a project subfolder like the one above.
 
-**GitHub Pages cannot run the signup endpoint.** Pages serves static files only,
-so `server.js` never runs there and the form has nothing to post to — it will
-say "Signups aren't connected on this address yet." To collect email addresses
-you need one of:
+## Where signups go
 
-- **A host that runs Node** (Render, Railway, Fly, a VPS). Deploy the repository,
-  run `node server.js`, and everything works as it does locally — this is the
-  only option that keeps submissions on infrastructure you control.
-- **A hosted form service.** Set `window.ULTRAMAX_ENDPOINT` in `index.html`
-  before `main.js` loads, pointing at the service's URL. The page keeps its
-  validation, loading and success states; only the destination changes.
+Both capture boxes deliver straight to an inbox through FormSubmit, so the page
+works on GitHub Pages, where no server of ours can run.
+
+The destination lives in each form's `action` attribute, and that is the single
+source of truth:
+
+- **Without JavaScript** the browser posts there natively.
+- **With JavaScript** `main.js` derives the same service's AJAX URL from that
+  attribute and posts there instead, so the page can show its own inline success
+  panel rather than navigating away to a third-party thank-you page.
+
+To change the destination, edit the `action` on both forms — nothing else. To
+move to a different provider entirely, set `window.ULTRAMAX_ENDPOINT` in
+`index.html` before `main.js` loads; that overrides everything.
+
+The action uses FormSubmit's opaque alias rather than the raw address, so the
+inbox is not exposed to scrapers in the page source. A new alias is issued when
+you confirm an address with them.
+
+Note that FormSubmit answers `200` with `success:"false"` for its own failures —
+an unconfirmed address, most commonly. `main.js` checks that flag rather than
+trusting the status code, so a dropped submission can never render a success
+panel to the visitor.
+
+### Self-hosting instead
+
+`server.js` still works and is still the only option that keeps submissions on
+infrastructure you control. Point both form `action`s back at `api/subscribe`
+and run it on any host with Node (Render, Railway, Fly, a VPS). Submissions then
+land in `data/submissions.jsonl` as described below instead of an inbox.
 
 ## Signup endpoint
 
