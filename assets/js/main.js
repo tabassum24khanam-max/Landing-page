@@ -279,13 +279,18 @@
     /* ---- scroll-driven reveal (unaffected by which symbol is showing) ---- */
     var TOTAL_CANDLES = 14;
     var BASE_SHOWN = 0.2;               // 3 of 14 candles drawn at progress 0
-    // AI mode + first marker fire together at halfway, so the moment
-    // AUTONOMOUS TRADING appears there's already a BUY on the chart — not
-    // "AI on, then keep scrolling and eventually a marker shows up." The
-    // three remaining markers stagger out from there so all four are drawn
-    // before the runway is 75% done.
-    var AI_ON_AT = 0.5;
-    var MARKER_AT = { buy1: .5, sell1: .58, buy2: .66, sell2: .74 };
+    var CANDLES_DONE_AT = 0.6;          // all 14 candles are drawn by here, so
+                                        // the slower part (building the chart)
+                                        // is over before the AI events start —
+                                        // and every marker below always lands
+                                        // on a candle that already exists,
+                                        // never floating in empty space
+    // Once the chart is mostly built, the AI half plays FAST: AI mode + the
+    // first BUY fire together, then the remaining three trades stagger in
+    // quickly, all four done by ~0.82. No long "AI on, nothing happening"
+    // gap, and a short tail before the chart unpins.
+    var AI_ON_AT = 0.42;
+    var MARKER_AT = { buy1: .42, sell1: .55, buy2: .68, sell2: .82 };
 
     function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
 
@@ -293,9 +298,10 @@
     var lastAiOn = null;
 
     function applyProgress(progress) {
-      // No Math.max floor: BASE_SHOWN=0 means we intentionally want 0 candles
-      // at scroll 0, and clamping to 1 would defeat that "starts from empty".
-      var revealCount = Math.ceil(TOTAL_CANDLES * (BASE_SHOWN + (1 - BASE_SHOWN) * progress));
+      // Candles reveal on their own faster clock (finished by CANDLES_DONE_AT)
+      // so the chart is complete before the AI markers start appearing.
+      var candleProgress = Math.min(1, progress / CANDLES_DONE_AT);
+      var revealCount = Math.ceil(TOTAL_CANDLES * (BASE_SHOWN + (1 - BASE_SHOWN) * candleProgress));
       if (revealCount !== lastRevealCount) {
         lastRevealCount = revealCount;
         candles.forEach(function (el) {
