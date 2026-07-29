@@ -1,8 +1,8 @@
 {
-  "name": "nocturne-landing",
+  "name": "bobcat-landing",
   "version": "1.0.0",
   "private": true,
-  "description": "Landing page and beta-signup endpoint for Nocturne, an autonomous market intelligence system.",
+  "description": "Landing page and early-access signup endpoint for BOBCAT, an autonomous trading system.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

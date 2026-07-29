@@ -1,5 +1,5 @@
 /* ============================================================================
-   ULTRAMAX — static host + beta signup endpoint
+   BOBCAT — static host + beta signup endpoint
    Zero dependencies. Node 18+.
 
      node server.js                 # http://localhost:3000
@@ -162,11 +162,11 @@ function sendHtml(res, status, title, body) {
   const page = Buffer.from(`<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${escapeHtml(title)} — ULTRAMAX</title>
+<title>${escapeHtml(title)} — BOBCAT</title>
 <link rel="stylesheet" href="/assets/css/main.css">
 </head><body>
 <main class="wrap" style="padding-block:18vh;max-width:640px">
-  <p class="kicker"><span class="mono">—</span> ULTRAMAX</p>
+  <p class="kicker"><span class="mono">—</span> BOBCAT</p>
   <h1 class="h2">${escapeHtml(title)}</h1>
   <p class="lede">${escapeHtml(body)}</p>
   <p style="margin-top:36px"><a class="btn btn--ghost" href="/">Back to the site</a></p>
@@ -213,7 +213,7 @@ async function handleSubscribe(req, res) {
   // `company_website` is still honoured so existing clients keep working.
   const trap = payload._honey || payload.company_website;
   if (typeof trap === 'string' && trap.trim()) {
-    const decoy = 'UMX-' + hash(String(Date.now())).slice(0, 6).toUpperCase();
+    const decoy = 'BC-' + hash(String(Date.now())).slice(0, 6).toUpperCase();
     return isForm
       ? sendHtml(res, 200, 'You’re on the list.', 'We’ll email you when a seat opens.')
       : sendJson(res, 200, { ok: true, ref: decoy });
@@ -230,7 +230,7 @@ async function handleSubscribe(req, res) {
 
   const message = String(payload.message || '').trim().slice(0, MAX_MESSAGE);
   const source = String(payload.source || 'unknown').trim().slice(0, 32);
-  const ref = 'UMX-' + crypto.randomBytes(3).toString('hex').toUpperCase();
+  const ref = 'BC-' + crypto.randomBytes(3).toString('hex').toUpperCase();
 
   const record = {
     email,
@@ -362,7 +362,7 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, HOST, () => {
-  console.log(`ULTRAMAX listening on http://localhost:${PORT}`);
+  console.log(`BOBCAT listening on http://localhost:${PORT}`);
   console.log(`Submissions → ${STORE}`);
   if (EMAIL_ENDPOINT) console.log(`Forwarding  → ${EMAIL_ENDPOINT}`);
 });

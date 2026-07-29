@@ -1,6 +1,6 @@
-# ULTRAMAX — landing page
+# BOBCAT — landing page
 
-Single-purpose landing page for ULTRAMAX, an autonomous multi-agent trading
+Single-purpose landing page for BOBCAT, an autonomous multi-agent trading
 system currently in paper trading. One objective: collect email addresses for
 early access.
 
@@ -53,7 +53,7 @@ source of truth:
   panel rather than navigating away to a third-party thank-you page.
 
 To change the destination, edit the `action` on both forms — nothing else. To
-move to a different provider entirely, set `window.ULTRAMAX_ENDPOINT` in
+move to a different provider entirely, set `window.BOBCAT_ENDPOINT` in
 `index.html` before `main.js` loads; that overrides everything.
 
 The action uses FormSubmit's opaque alias rather than the raw address, so the
@@ -83,7 +83,7 @@ off) and answers in the dialect it was asked in.
 { "email": "you@company.com", "message": "optional", "source": "signup" }
 
 // response
-{ "ok": true, "ref": "UMX-4F2A91" }
+{ "ok": true, "ref": "BC-4F2A91" }
 ```
 
 Submissions are appended as JSON Lines to `data/submissions.jsonl`:
@@ -96,7 +96,7 @@ Submissions are appended as JSON Lines to `data/submissions.jsonl`:
   "timestamp": "2026-07-28T09:41:02.184Z",
   "ip_hash": "…",           // salted, truncated — for rate limiting only
   "user_agent": "…",
-  "ref": "UMX-4F2A91"
+  "ref": "BC-4F2A91"
 }
 ```
 
@@ -132,41 +132,70 @@ hashes cannot be correlated across restarts.
 
 ## Design notes
 
-- **Palette.** Near-black background, off-white text, warm greys, and a single
-  restrained amber accent (`#EAA631`) used only for interactive and live
-  elements — a professional-terminal look, not a crypto one. Change `--accent`
-  in `assets/css/main.css` to reskin.
-- **Naming.** The product is called *ULTRAMAX* throughout. To rename, edit the
-  `.mark__word` spans in `index.html` plus the `<title>` and meta description.
+- **Theme.** Light is the hard default, dark is opt-in via the toggle in the
+  nav. The choice is stored in `localStorage` under `bobcat-theme` and applied
+  by an inline script in `<head>` *before* the stylesheet paints, so there's no
+  flash of the wrong theme on load. This is a deliberate product decision, not
+  the usual pattern — the page does **not** follow `prefers-color-scheme`, so a
+  visitor on a dark-mode OS still lands on the light page first. All colors are
+  CSS custom properties on `:root`, overridden under `:root[data-theme="dark"]`
+  in `assets/css/main.css`; add a theme by adding another override block.
+- **Accent.** A single restrained amber, `#C2610F` in light / `#EAA631` in
+  dark, used only for interactive and live elements.
+- **Naming.** The product is called *BOBCAT* throughout. To rename, edit the
+  `.mark__word` spans and the inline SVG mark in `index.html` (nav + footer),
+  the `<title>`/meta description, and the reference-code prefix (`BC-`) in
+  `server.js`.
 - **The "direct mail" address** is set in one place: the `directMail()`
   function near the top of `assets/js/main.js`. It's assembled from two string
   parts rather than written as a literal `mailto:` link, so it isn't handed to
   scrapers as plain text in the page source.
 - **The live desk feed** in the hero (`.term`) is a scripted, looping
-  transcript — clearly illustrative, not a log of real trades. It pauses when
-  scrolled off screen or the tab is hidden, and shows a static excerpt instead
-  of animating under `prefers-reduced-motion: reduce`.
+  transcript — clearly illustrative, not a log of real trades or real internal
+  system state. It pauses when scrolled off screen or the tab is hidden, and
+  shows a static excerpt instead of animating under `prefers-reduced-motion:
+  reduce`.
+- **The chart** (`.chart`, in the "Watch it reason" section) is a hand-authored
+  SVG replay, not a live feed and not connected to any market-data API. The
+  candles, entry/exit markers and R-multiples are fixed illustrative values —
+  see *Content honesty* below before changing that.
+- **The ticker** (`.ticker`) is ambient wallpaper: public tickers with
+  illustrative movement, unconnected to any BOBCAT trade or result. It's a CSS
+  `translateX` loop, paused off screen via `IntersectionObserver` and disabled
+  entirely under reduced motion.
+- **Copy is deliberately high-level.** The "how it works" section describes
+  what the system does, not exactly how — no indicator lists, no vote counts,
+  no timing thresholds. That's intentional: enough for a technical reader to
+  trust the sophistication is real, not enough to hand a competitor a spec to
+  copy. Keep new copy at that altitude rather than drifting back toward a spec
+  sheet.
 - **Layout is deliberately compressed** — one continuous "how it works / why
-  trust it" section rather than two, and the risk-layer mechanisms sit in a
-  two-column grid instead of a long list. This trades some breathing room for
-  fewer scrolls; if you want more air, raise the `--pad`/section `padding-block`
-  values in `main.css` back up.
+  trust it" section rather than two, and the risk-layer principles sit in a
+  short two-column grid instead of a long list. If you want more air, raise the
+  `--pad`/section `padding-block` values in `main.css` back up.
 
 ## Accessibility and resilience
 
-- `prefers-reduced-motion: reduce` removes every transition and freezes the
-  desk feed on its first few lines instead of animating them in.
+- `prefers-reduced-motion: reduce` removes every transition, freezes the desk
+  feed on its first few lines, stops the ticker, and renders the chart in its
+  finished state instead of drawing it in.
 - With JavaScript disabled a `<noscript>` block reveals all content and the
   forms fall back to a native POST that the server answers in HTML.
-- There is a skip link and a visible focus ring throughout.
+- There is a skip link and a visible focus ring throughout. The theme toggle is
+  a real `<button>` with `aria-pressed` kept in sync, and the chart carries a
+  descriptive `aria-label` plus a plain-text `sr-only` explanation of the
+  terminal feed for screen readers, since both are marked `aria-hidden` for
+  everyone else (they're decorative, not informational).
 
 ## Content honesty
 
 This page makes no profit, return, or win-rate claims anywhere — none of that
 is established for a system currently in paper trading, and inventing it would
-be false. The only numbers on the page are product facts (35+ indicators, 10+
-news sources, a 10-second sentry interval, 3-vote majority) or figures
-explicitly labelled illustrative (the real-vs-headline equity bars, the
-forensic-log excerpt). The footer states plainly that this is paper trading and
-that nothing here is financial advice. Keep it that way — don't add performance
-figures later without the same care.
+be false. The only numbers on the page are qualitative product facts or figures
+explicitly labelled illustrative: the chart's entries/exits and R-multiples
+(captioned "illustrative replay — not live data, not actual trading results"),
+the real-vs-headline equity bars, and the forensic-log excerpt. The footer
+states plainly that this is paper trading and that nothing here is financial
+advice. Keep it that way — don't add real performance figures later without the
+same care, and don't let the chart's illustrative numbers drift toward looking
+like a genuine track record.
