@@ -278,16 +278,13 @@
 
     /* ---- scroll-driven reveal (unaffected by which symbol is showing) ---- */
     var TOTAL_CANDLES = 14;
-    var BASE_SHOWN = 0.2;               // ~3 of 14 candles drawn at progress 0
-                                        // — the "twenty percent-ish" the person
-                                        // asking for this landed on: empty read
-                                        // as broken, ~4 read as too far along,
-                                        // 3 reads as "just starting"
-    var AI_ON_AT = 0.78;                // pushed well past pin engagement so
-                                        // the desk panel sits in ACTIVE TRADING
-                                        // / focus for a good while before it
-                                        // ever flips to AUTONOMOUS TRADING
-    var MARKER_AT = { buy1: .82, sell1: .88, buy2: .93, sell2: .98 };
+    var BASE_SHOWN = 0.2;               // 3 of 14 candles drawn at progress 0
+    // AI/marker events fire much faster than the candle reveal: candles
+    // draw in slowly across the whole runway, but AUTONOMOUS TRADING and
+    // the buy/sell markers all land in the middle third — kicking on at
+    // halfway and finishing well before the runway ends.
+    var AI_ON_AT = 0.5;
+    var MARKER_AT = { buy1: .58, sell1: .66, buy2: .74, sell2: .82 };
 
     function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
 
