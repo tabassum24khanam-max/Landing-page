@@ -164,10 +164,11 @@ hashes cannot be correlated across restarts.
   Reveal timing lives in `main.js`: `BASE_SHOWN` (fraction of candles drawn at
   scroll 0 — currently ~3 of 18), `AI_ON_AT` (the ACTIVE→AUTONOMOUS switch),
   and `MARKER_AT` (per-marker thresholds `m1`…`m6`). Candles reveal linearly
-  across the whole runway, so the switch is set to fire at `0.45` — the point
-  where the chart has filled to its middle (~candle 9 of 18, x≈300 of 600),
-  i.e. "the graph reaches the halfway line" — together with the first trade's
-  BUY. The other five markers stagger out after it. **Invariant:** every
+  across the whole runway, and the switch fires at `0.5` — a little past the
+  chart's middle (~candle 10 of 18) — together with the first trade's BUY. The
+  other five markers stagger out after it. Overall pacing is set by the runway
+  height (longer = more scroll to reveal everything, i.e. slower) and, more
+  finely, by nudging `AI_ON_AT`/`MARKER_AT` later. **Invariant:** every
   `MARKER_AT` threshold must be ≥ the progress at which its `data-candle-ref`
   candle is revealed, or the marker floats in empty space before its candle is
   drawn — the trap that made earlier retimes look broken. There's a check for

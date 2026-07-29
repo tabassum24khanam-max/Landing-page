@@ -305,8 +305,8 @@
     // of 18, x≈300 of 600 → the halfway line), together with the first
     // trade's BUY. The remaining five markers stagger out from there, one
     // trade after another, each landing on a candle that's already drawn.
-    var AI_ON_AT = 0.45;
-    var MARKER_AT = { m1: .45, m2: .56, m3: .67, m4: .78, m5: .87, m6: .95 };
+    var AI_ON_AT = 0.5;
+    var MARKER_AT = { m1: .5, m2: .61, m3: .71, m4: .8, m5: .88, m6: .96 };
 
     function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
 
