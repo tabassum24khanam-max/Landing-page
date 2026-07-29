@@ -279,8 +279,11 @@
     /* ---- scroll-driven reveal (unaffected by which symbol is showing) ---- */
     var TOTAL_CANDLES = 14;
     var BASE_SHOWN = 0.25;              // fraction already drawn at progress 0
-    var AI_ON_AT = 0.42;
-    var MARKER_AT = { buy1: .48, sell1: .6, buy2: .74, sell2: .88 };
+    var AI_ON_AT = 0.58;                // ~just past pin engagement, so the
+                                        // desk panel appears in its OFF state
+                                        // first and flips ON once you scroll
+                                        // through it
+    var MARKER_AT = { buy1: .64, sell1: .74, buy2: .84, sell2: .94 };
 
     function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
 
@@ -326,16 +329,20 @@
       });
     }
 
+    // Matches the CSS `top:` on .scrollchart__pin — the sticky offset the
+    // pin engages against. Used to compute the total scroll span from the
+    // very top of the page to the end of the chart's runway, so progress
+    // is 0 at scrollY=0 (not already halfway just because the chart is
+    // peeking below the fold) and grows in step with how far the visitor
+    // has actually scrolled.
+    var STICKY_OFFSET = 76;
+
     function update() {
       var rect = wrapper.getBoundingClientRect();
-      var vh = window.innerHeight || document.documentElement.clientHeight;
+      var wrapDocTop = rect.top + window.pageYOffset;
       var scrollable = wrapper.offsetHeight - pin.offsetHeight;
-      // Progress starts as the wrapper's top enters the viewport bottom
-      // and finishes once the pin has scrolled through its entire runway.
-      // This way the chart is already coming to life as it slides into view
-      // from below, rather than sitting inert until it pins against the top.
-      var runway = vh + scrollable;
-      var progress = runway > 1 ? clamp((vh - rect.top) / runway, 0, 1) : 1;
+      var totalScroll = wrapDocTop - STICKY_OFFSET + scrollable;
+      var progress = totalScroll > 1 ? clamp(window.pageYOffset / totalScroll, 0, 1) : 1;
       applyProgress(progress);
     }
 
