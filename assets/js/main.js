@@ -279,12 +279,13 @@
     /* ---- scroll-driven reveal (unaffected by which symbol is showing) ---- */
     var TOTAL_CANDLES = 14;
     var BASE_SHOWN = 0.2;               // 3 of 14 candles drawn at progress 0
-    // AI/marker events fire much faster than the candle reveal: candles
-    // draw in slowly across the whole runway, but AUTONOMOUS TRADING and
-    // the buy/sell markers all land in the middle third — kicking on at
-    // halfway and finishing well before the runway ends.
+    // AI mode + first marker fire together at halfway, so the moment
+    // AUTONOMOUS TRADING appears there's already a BUY on the chart — not
+    // "AI on, then keep scrolling and eventually a marker shows up." The
+    // three remaining markers stagger out from there so all four are drawn
+    // before the runway is 75% done.
     var AI_ON_AT = 0.5;
-    var MARKER_AT = { buy1: .58, sell1: .66, buy2: .74, sell2: .82 };
+    var MARKER_AT = { buy1: .5, sell1: .58, buy2: .66, sell2: .74 };
 
     function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
 
