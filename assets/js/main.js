@@ -278,11 +278,11 @@
 
     /* ---- scroll-driven reveal (unaffected by which symbol is showing) ---- */
     var TOTAL_CANDLES = 14;
-    var BASE_SHOWN = 0;                 // fraction already drawn at progress 0
-                                        // — 0 means the chart is literally
-                                        // empty on first load and every candle
-                                        // has to be scrolled in, per repeated
-                                        // "it should start from the start"
+    var BASE_SHOWN = 0.2;               // ~3 of 14 candles drawn at progress 0
+                                        // — the "twenty percent-ish" the person
+                                        // asking for this landed on: empty read
+                                        // as broken, ~4 read as too far along,
+                                        // 3 reads as "just starting"
     var AI_ON_AT = 0.78;                // pushed well past pin engagement so
                                         // the desk panel sits in ACTIVE TRADING
                                         // / focus for a good while before it
