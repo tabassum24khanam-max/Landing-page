@@ -177,17 +177,32 @@ hashes cannot be correlated across restarts.
   recomputed from each symbol's data plus fixed offsets from each candle's
   high/low, so adding a fifth symbol is just adding a data object, not hand
   placing new marker coordinates.
-  The **status panel** (`.deskpanel`) sits directly under the chart rather
-  than in its own bordered box, and its "Analysing / News / Math / Market /
-  Other" chips rotate through short illustrative lines once AI mode switches
-  on (`deskChips()` in `main.js`, one `setInterval` tick every 2.6s). The
-  "News" chip's lines are hand-written illustrative headline-shaped text, not
-  pulled from a real news source — there's no free, reliable, browser-safe
-  feed to pull real headlines from without adding a live dependency that could
-  break the homepage, and real headlines would risk implying the chart's
-  trades reacted to real news, which they didn't. All candles, entry/exit
-  markers and R-multiples on the chart are fixed illustrative values — see
-  *Content honesty* below before changing that.
+  The **status panel** (`.deskpanel`) sits directly under the chart. The
+  "ACTIVE TRADING / AUTONOMOUS TRADING" heading + "AI MODE OFF/ON" badge live
+  on the left, always visible; the chips ("Analysing / News / Math / Market /
+  Other") live in a labelled `.deskpanel__box` on the right that fades in
+  (border + label) only once AI mode switches on, so it doesn't sit as an
+  empty container in the off state. Each chip rotates through a short set of
+  illustrative lines every 2.6s (`deskChips()` in `main.js`). The "News"
+  chip's lines carry a visible "News · " prefix — headlines like "Oil slips
+  on demand outlook" would otherwise read as an unlabelled ambient string,
+  which the person who asked for the panel specifically called out. The lines
+  themselves are hand-written illustrative headline-shaped text, not pulled
+  from a real news source — there's no free, reliable, browser-safe feed to
+  pull real headlines from without adding a live dependency that could break
+  the homepage, and real headlines would risk implying the chart's trades
+  reacted to real news, which they didn't. All candles, entry/exit markers
+  and R-multiples on the chart are fixed illustrative values — see *Content
+  honesty* below before changing that.
+
+  **Scroll timing.** Progress is `(vh - rect.top) / (vh + scrollable)` — it
+  starts as soon as the wrapper's top enters the viewport bottom, not when
+  the pin engages. That means the chart is already coming to life as it
+  slides into view from below rather than sitting inert until it hits the
+  top and pins. Combined with `BASE_SHOWN = 0.25` in `main.js`, roughly half
+  the candles are already drawn on first load (before any scroll). The
+  runway height (`.scrollchart`, currently `95vh`) controls how much scroll
+  distance the full reveal takes; shorter is faster.
 - **The ticker** (`.ticker`) is ambient wallpaper: public tickers with
   illustrative movement, unconnected to any BOBCAT trade or result. It's a CSS
   `translateX` loop, paused off screen via `IntersectionObserver` and disabled

@@ -278,9 +278,9 @@
 
     /* ---- scroll-driven reveal (unaffected by which symbol is showing) ---- */
     var TOTAL_CANDLES = 14;
-    var BASE_SHOWN = 0.2;               // fraction already drawn at progress 0
-    var AI_ON_AT = 0.5;
-    var MARKER_AT = { buy1: .55, sell1: .68, buy2: .82, sell2: .95 };
+    var BASE_SHOWN = 0.25;              // fraction already drawn at progress 0
+    var AI_ON_AT = 0.42;
+    var MARKER_AT = { buy1: .48, sell1: .6, buy2: .74, sell2: .88 };
 
     function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
 
@@ -328,8 +328,14 @@
 
     function update() {
       var rect = wrapper.getBoundingClientRect();
+      var vh = window.innerHeight || document.documentElement.clientHeight;
       var scrollable = wrapper.offsetHeight - pin.offsetHeight;
-      var progress = scrollable > 1 ? clamp(-rect.top / scrollable, 0, 1) : 1;
+      // Progress starts as the wrapper's top enters the viewport bottom
+      // and finishes once the pin has scrolled through its entire runway.
+      // This way the chart is already coming to life as it slides into view
+      // from below, rather than sitting inert until it pins against the top.
+      var runway = vh + scrollable;
+      var progress = runway > 1 ? clamp((vh - rect.top) / runway, 0, 1) : 1;
       applyProgress(progress);
     }
 
@@ -349,11 +355,17 @@
     var chips = $$('[data-chip]');
     if (!deskpanel || !chips.length) return;
 
+    // Each chip's own rotation set. news items carry a "NEWS" prefix so
+    // headlines like "Oil slips on demand outlook" read as news, not as an
+    // unlabelled ambient string — that was called out explicitly by the
+    // person who wanted the panel. The other chips are self-labelling
+    // (Correlation: checked / Breadth: neutral / etc.) and left alone.
     var CONTENT = {
       analyse: ['Analysing', 'Weighing the case', 'Reading structure', 'Cross-checking'],
       news: [
-        'Fed holds rates steady', 'Chip-sector earnings beat estimates', 'Oil slips on demand outlook',
-        'Dollar index little changed', 'Jobless claims in line with forecast', 'Treasury yields drift higher'
+        'News · Fed holds rates steady', 'News · Chip-sector earnings beat estimates',
+        'News · Oil slips on demand outlook', 'News · Dollar index little changed',
+        'News · Jobless claims in line with forecast', 'News · Treasury yields drift higher'
       ],
       math: ['Volatility: contracting', 'Correlation: checked', 'Regime: stable', 'Spread: normal', 'Drawdown: within limits'],
       market: ['Liquidity: normal', 'Order flow: balanced', 'Breadth: neutral', 'Momentum: building', 'Structure: intact'],

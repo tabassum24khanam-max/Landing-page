@@ -37,6 +37,8 @@
   .deskpanel__h--off, .deskpanel__s.deskpanel__h--off { opacity: 0 !important; }
   .deskpanel__h--on, .deskpanel__s.deskpanel__h--on { opacity: 1 !important; transform: none !important; }
   .deskpanel__chips li { opacity: 1 !important; transform: none !important; color: var(--ink-2) !important; border-color: var(--rule) !important; }
+  .deskpanel__box { border-color: var(--rule) !important; background: var(--surface) !important; }
+  .deskpanel__boxlabel { opacity: 1 !important; }
   .deskpanel__badge { border-color: var(--accent-line) !important; color: var(--up) !important; }
   .deskpanel__dot { background: var(--up) !important; }
   .deskpanel__badgeword--off { display: none !important; }
@@ -236,13 +238,16 @@
               </div>
             </div>
 
-            <ul class="deskpanel__chips">
-              <li class="mono" data-chip="analyse">Analysing</li>
-              <li class="mono" data-chip="news">News</li>
-              <li class="mono" data-chip="math">Math</li>
-              <li class="mono" data-chip="market">Market</li>
-              <li class="mono" data-chip="other">Other</li>
-            </ul>
+            <div class="deskpanel__box" data-deskpanel-box>
+              <p class="deskpanel__boxlabel mono">LIVE ANALYSIS</p>
+              <ul class="deskpanel__chips">
+                <li class="mono" data-chip="analyse">Analysing</li>
+                <li class="mono" data-chip="news">News</li>
+                <li class="mono" data-chip="math">Math</li>
+                <li class="mono" data-chip="market">Market</li>
+                <li class="mono" data-chip="other">Other</li>
+              </ul>
+            </div>
           </aside>
 
           <p class="sr-only">

@@ -274,7 +274,7 @@ table { border-collapse: collapse; width: 100%; }
    is not a separate animation — it's the same progress value falling back
    through the same thresholds, so it undoes itself automatically.
    Runway is intentionally short so the sequence resolves quickly. */
-.scrollchart { position: relative; height: 130vh; }
+.scrollchart { position: relative; height: 95vh; }
 .scrollchart__pin { position: sticky; top: 76px; padding-block: 4px; }
 /* No-JS / reduced-motion escape hatch: collapse the runway and unstick the
    chart so it reads as one ordinary block, not a permanently-pinned one. */
@@ -385,11 +385,30 @@ table { border-collapse: collapse; width: 100%; }
 .deskpanel.is-ai-on .deskpanel__h--off { opacity: 0; transform: translateY(-4px); }
 .deskpanel.is-ai-on .deskpanel__h--on  { opacity: 1; transform: none; }
 
-.deskpanel__chips { display: flex; flex-wrap: wrap; gap: 8px; margin-left: auto; }
+/* The chips live inside a bordered box so it reads as a labelled area
+   ("LIVE ANALYSIS") rather than five loose tags floating in the layout.
+   The box holds a fixed footprint via min-height, so it doesn't jump around
+   as chip text rotates through content of different lengths. */
+.deskpanel__box {
+  margin-left: auto; flex: 0 1 auto;
+  border: 1px solid transparent; border-radius: 10px;
+  padding: 10px 12px 12px; background: transparent;
+  min-width: min(360px, 100%); max-width: 720px;
+  align-self: stretch;
+  transition: border-color .35s var(--ease), background-color .35s var(--ease);
+}
+.deskpanel.is-ai-on .deskpanel__box { border-color: var(--rule); background: var(--surface); }
+.deskpanel__boxlabel {
+  font-size: 10px; letter-spacing: .14em; color: var(--muted-2);
+  margin: 0 0 8px; text-transform: uppercase;
+  opacity: 0; transition: opacity .35s var(--ease);
+}
+.deskpanel.is-ai-on .deskpanel__boxlabel { opacity: 1; }
+.deskpanel__chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .deskpanel__chips li {
-  font-size: 11px; letter-spacing: .02em; padding: 6px 10px; border-radius: 5px;
-  background: var(--surface); border: 1px solid var(--rule-soft); color: var(--muted-2);
-  opacity: 0; transform: translateX(-4px); min-width: 88px; text-align: center;
+  font-size: 10.5px; letter-spacing: .02em; padding: 5px 9px; border-radius: 5px;
+  background: var(--bg); border: 1px solid var(--rule-soft); color: var(--muted-2);
+  opacity: 0; transform: translateX(-4px);
   transition: opacity .3s var(--ease-out), transform .3s var(--ease-out), color .3s var(--ease), border-color .3s var(--ease);
 }
 .deskpanel.is-ai-on .deskpanel__chips li { opacity: 1; transform: none; color: var(--ink-2); border-color: var(--rule); }
