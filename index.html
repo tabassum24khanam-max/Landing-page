@@ -131,7 +131,7 @@
             </div>
           </div>
 
-          <svg class="chart__svg" viewBox="0 0 600 246" role="img" data-chart-svg aria-label="A replayed illustrative trading session. BOBCAT switches on, buys near a dip and sells near a peak for a gain, then sells near a smaller peak and buys back lower for a second gain.">
+          <svg class="chart__svg" viewBox="0 0 600 246" role="img" data-chart-svg aria-label="A replayed illustrative trading session. BOBCAT switches on and runs three trades: it buys a dip and sells a peak for a gain, sells a smaller peak and buys back lower for a second gain, then buys a pullback and sells a later peak for a third gain.">
             <g class="chart__grid" aria-hidden="true">
               <path d="M0 46 H600 M0 90 H600 M0 145 H600 M0 190 H600"/>
             </g>
@@ -143,81 +143,107 @@
             </g>
 
             <!-- candles: index order matches [data-candle] so JS can reveal by count
-                 and redraw geometry when the symbol tab changes -->
+                 and redraw geometry when the symbol tab changes. x = 28 + i*30.
+                 Values below are the BTC defaults (also what JS renders for BTC). -->
             <g class="candles" data-candles>
-              <line class="wick wick--up"   data-candle="0"  x1="26"  y1="136" x2="26"  y2="154"/>
-              <rect class="candle candle--up"   data-candle="0" x="20" y="138" width="12" height="12"/>
-              <line class="wick wick--up"   data-candle="1"  x1="66"  y1="118" x2="66"  y2="140"/>
-              <rect class="candle candle--up"   data-candle="1" x="60" y="122" width="12" height="16"/>
-              <line class="wick wick--down" data-candle="2"  x1="106" y1="118" x2="106" y2="134"/>
-              <rect class="candle candle--down" data-candle="2" x="100" y="122" width="12" height="8"/>
-              <line class="wick wick--down" data-candle="3"  x1="146" y1="128" x2="146" y2="148"/>
-              <rect class="candle candle--down" data-candle="3" x="140" y="130" width="12" height="16"/>
-              <line class="wick wick--down" data-candle="4"  x1="186" y1="142" x2="186" y2="156"/>
-              <rect class="candle candle--down" data-candle="4" x="180" y="146" width="12" height="6"/>
-              <line class="wick wick--up"   data-candle="5"  x1="226" y1="132" x2="226" y2="154"/>
-              <rect class="candle candle--up"   data-candle="5" x="220" y="134" width="12" height="18"/>
-              <line class="wick wick--up"   data-candle="6"  x1="266" y1="112" x2="266" y2="136"/>
-              <rect class="candle candle--up"   data-candle="6" x="260" y="114" width="12" height="20"/>
-              <line class="wick wick--up"   data-candle="7"  x1="306" y1="96"  x2="306" y2="116"/>
-              <rect class="candle candle--up"   data-candle="7" x="300" y="100" width="12" height="14"/>
-              <line class="wick wick--down" data-candle="8"  x1="346" y1="98"  x2="346" y2="114"/>
-              <rect class="candle candle--down" data-candle="8" x="340" y="100" width="12" height="12"/>
-              <line class="wick wick--down" data-candle="9"  x1="386" y1="110" x2="386" y2="128"/>
-              <rect class="candle candle--down" data-candle="9" x="380" y="112" width="12" height="14"/>
-              <line class="wick wick--up"   data-candle="10" x1="426" y1="116" x2="426" y2="130"/>
-              <rect class="candle candle--up"   data-candle="10" x="420" y="120" width="12" height="6"/>
-              <line class="wick wick--down" data-candle="11" x1="466" y1="118" x2="466" y2="136"/>
-              <rect class="candle candle--down" data-candle="11" x="460" y="120" width="12" height="12"/>
-              <line class="wick wick--down" data-candle="12" x1="506" y1="130" x2="506" y2="148"/>
-              <rect class="candle candle--down" data-candle="12" x="500" y="132" width="12" height="12"/>
-              <line class="wick wick--down" data-candle="13" x1="546" y1="140" x2="546" y2="154"/>
-              <rect class="candle candle--down" data-candle="13" x="540" y="144" width="12" height="6"/>
+              <line class="wick wick--up"   data-candle="0"  x1="28"  y1="132" x2="28"  y2="152"/>
+              <rect class="candle candle--up"   data-candle="0"  x="22"  y="138" width="12" height="12"/>
+              <line class="wick wick--up"   data-candle="1"  x1="58"  y1="118" x2="58"  y2="140"/>
+              <rect class="candle candle--up"   data-candle="1"  x="52"  y="124" width="12" height="12"/>
+              <line class="wick wick--down" data-candle="2"  x1="88"  y1="120" x2="88"  y2="140"/>
+              <rect class="candle candle--down" data-candle="2"  x="82"  y="128" width="12" height="10"/>
+              <line class="wick wick--down" data-candle="3"  x1="118" y1="140" x2="118" y2="160"/>
+              <rect class="candle candle--down" data-candle="3"  x="112" y="144" width="12" height="12"/>
+              <line class="wick wick--up"   data-candle="4"  x1="148" y1="126" x2="148" y2="148"/>
+              <rect class="candle candle--up"   data-candle="4"  x="142" y="132" width="12" height="12"/>
+              <line class="wick wick--up"   data-candle="5"  x1="178" y1="108" x2="178" y2="132"/>
+              <rect class="candle candle--up"   data-candle="5"  x="172" y="114" width="12" height="14"/>
+              <line class="wick wick--up"   data-candle="6"  x1="208" y1="92"  x2="208" y2="114"/>
+              <rect class="candle candle--up"   data-candle="6"  x="202" y="98"  width="12" height="12"/>
+              <line class="wick wick--down" data-candle="7"  x1="238" y1="100" x2="238" y2="120"/>
+              <rect class="candle candle--down" data-candle="7"  x="232" y="104" width="12" height="12"/>
+              <line class="wick wick--down" data-candle="8"  x1="268" y1="108" x2="268" y2="128"/>
+              <rect class="candle candle--down" data-candle="8"  x="262" y="114" width="12" height="10"/>
+              <line class="wick wick--up"   data-candle="9"  x1="298" y1="98"  x2="298" y2="120"/>
+              <rect class="candle candle--up"   data-candle="9"  x="292" y="104" width="12" height="12"/>
+              <line class="wick wick--down" data-candle="10" x1="328" y1="112" x2="328" y2="134"/>
+              <rect class="candle candle--down" data-candle="10" x="322" y="118" width="12" height="12"/>
+              <line class="wick wick--down" data-candle="11" x1="358" y1="126" x2="358" y2="146"/>
+              <rect class="candle candle--down" data-candle="11" x="352" y="130" width="12" height="12"/>
+              <line class="wick wick--down" data-candle="12" x1="388" y1="138" x2="388" y2="158"/>
+              <rect class="candle candle--down" data-candle="12" x="382" y="142" width="12" height="12"/>
+              <line class="wick wick--up"   data-candle="13" x1="418" y1="128" x2="418" y2="148"/>
+              <rect class="candle candle--up"   data-candle="13" x="412" y="132" width="12" height="12"/>
+              <line class="wick wick--up"   data-candle="14" x1="448" y1="120" x2="448" y2="140"/>
+              <rect class="candle candle--up"   data-candle="14" x="442" y="126" width="12" height="10"/>
+              <line class="wick wick--up"   data-candle="15" x1="478" y1="108" x2="478" y2="128"/>
+              <rect class="candle candle--up"   data-candle="15" x="472" y="112" width="12" height="12"/>
+              <line class="wick wick--up"   data-candle="16" x1="508" y1="94"  x2="508" y2="114"/>
+              <rect class="candle candle--up"   data-candle="16" x="502" y="98"  width="12" height="12"/>
+              <line class="wick wick--down" data-candle="17" x1="538" y1="104" x2="538" y2="124"/>
+              <rect class="candle candle--down" data-candle="17" x="532" y="108" width="12" height="12"/>
             </g>
 
             <!-- markers: revealed by scroll progress. Coordinates below are the BTC
                  defaults (also what JS renders for BTC), so a no-JS visitor still sees
                  every marker correctly placed; main.js rewrites these when the symbol
-                 tab changes, using the same offsets from each candle's high/low. -->
-            <g class="marker" data-marker="buy1" data-role="buy" data-candle-ref="5">
-              <line class="marker__stem marker__stem--buy" x1="226" y1="184" x2="226" y2="170"/>
-              <polygon class="marker__arrow--buy" points="220,170 232,170 226,160"/>
-              <text class="marker__label marker__label--buy" x="226" y="200" text-anchor="middle">AI BUY</text>
+                 tab changes, using the same offsets from each candle's high/low.
+                 Three trades: m1/m2 (buy dip, sell peak), m3/m4 (sell smaller peak,
+                 buy back lower), m5/m6 (buy pullback, sell later peak). -->
+            <g class="marker" data-marker="m1" data-role="buy" data-candle-ref="3">
+              <line class="marker__stem marker__stem--buy" x1="118" y1="190" x2="118" y2="176"/>
+              <polygon class="marker__arrow--buy" points="112,176 124,176 118,166"/>
+              <text class="marker__label marker__label--buy" x="118" y="206" text-anchor="middle">AI BUY</text>
             </g>
 
-            <g class="marker" data-marker="sell1" data-role="sell" data-candle-ref="7">
-              <text class="marker__label marker__label--sell" x="306" y="58" text-anchor="middle">AI SELL</text>
-              <line class="marker__stem marker__stem--sell" x1="306" y1="66" x2="306" y2="80"/>
-              <polygon class="marker__arrow--sell" points="300,80 312,80 306,90"/>
+            <g class="marker" data-marker="m2" data-role="sell" data-candle-ref="6">
+              <text class="marker__label marker__label--sell" x="208" y="54" text-anchor="middle">AI SELL</text>
+              <line class="marker__stem marker__stem--sell" x1="208" y1="62" x2="208" y2="76"/>
+              <polygon class="marker__arrow--sell" points="202,76 214,76 208,86"/>
             </g>
-            <g class="marker" data-marker="sell1" data-dot="win">
-              <circle class="marker__dot marker__dot--win" cx="306" cy="214" r="4"/>
-              <text class="marker__label marker__label--buy" x="306" y="234" text-anchor="middle" data-outcome="win1">+2.1R</text>
-            </g>
-
-            <!-- second pair, roles swapped: sell first (higher price), buy second (lower
-                 price) — flipped per explicit request; this also flips the outcome from a
-                 loss to a small win (see README's content-honesty note on that trade-off) -->
-            <g class="marker" data-marker="buy2" data-role="sell" data-candle-ref="10">
-              <text class="marker__label marker__label--sell" x="426" y="78" text-anchor="middle">AI SELL</text>
-              <line class="marker__stem marker__stem--sell" x1="426" y1="86" x2="426" y2="100"/>
-              <polygon class="marker__arrow--sell" points="420,100 432,100 426,110"/>
+            <g class="marker" data-marker="m2" data-dot="win">
+              <circle class="marker__dot marker__dot--win" cx="208" cy="214" r="4"/>
+              <text class="marker__label marker__label--buy" x="208" y="234" text-anchor="middle" data-outcome="win1">+2.1R</text>
             </g>
 
-            <g class="marker" data-marker="sell2" data-role="buy" data-candle-ref="13">
-              <line class="marker__stem marker__stem--buy" x1="546" y1="184" x2="546" y2="170"/>
-              <polygon class="marker__arrow--buy" points="540,170 552,170 546,160"/>
-              <text class="marker__label marker__label--buy" x="546" y="200" text-anchor="middle">AI BUY</text>
+            <!-- second trade, roles swapped: sell first (higher price), buy back lower -->
+            <g class="marker" data-marker="m3" data-role="sell" data-candle-ref="9">
+              <text class="marker__label marker__label--sell" x="298" y="56" text-anchor="middle">AI SELL</text>
+              <line class="marker__stem marker__stem--sell" x1="298" y1="64" x2="298" y2="78"/>
+              <polygon class="marker__arrow--sell" points="292,78 304,78 298,88"/>
             </g>
-            <g class="marker" data-marker="sell2" data-dot="win">
-              <circle class="marker__dot marker__dot--win" cx="546" cy="214" r="4"/>
-              <text class="marker__label marker__label--buy" x="546" y="234" text-anchor="middle" data-outcome="win2">+0.5R</text>
+
+            <g class="marker" data-marker="m4" data-role="buy" data-candle-ref="12">
+              <line class="marker__stem marker__stem--buy" x1="388" y1="188" x2="388" y2="174"/>
+              <polygon class="marker__arrow--buy" points="382,174 394,174 388,164"/>
+              <text class="marker__label marker__label--buy" x="388" y="204" text-anchor="middle">AI BUY</text>
+            </g>
+            <g class="marker" data-marker="m4" data-dot="win">
+              <circle class="marker__dot marker__dot--win" cx="388" cy="214" r="4"/>
+              <text class="marker__label marker__label--buy" x="388" y="234" text-anchor="middle" data-outcome="win2">+0.5R</text>
+            </g>
+
+            <!-- third trade: buy the pullback, sell the later peak -->
+            <g class="marker" data-marker="m5" data-role="buy" data-candle-ref="14">
+              <line class="marker__stem marker__stem--buy" x1="448" y1="170" x2="448" y2="156"/>
+              <polygon class="marker__arrow--buy" points="442,156 454,156 448,146"/>
+              <text class="marker__label marker__label--buy" x="448" y="186" text-anchor="middle">AI BUY</text>
+            </g>
+
+            <g class="marker" data-marker="m6" data-role="sell" data-candle-ref="16">
+              <text class="marker__label marker__label--sell" x="508" y="56" text-anchor="middle">AI SELL</text>
+              <line class="marker__stem marker__stem--sell" x1="508" y1="64" x2="508" y2="78"/>
+              <polygon class="marker__arrow--sell" points="502,78 514,78 508,88"/>
+            </g>
+            <g class="marker" data-marker="m6" data-dot="win">
+              <circle class="marker__dot marker__dot--win" cx="508" cy="214" r="4"/>
+              <text class="marker__label marker__label--buy" x="508" y="234" text-anchor="middle" data-outcome="win3">+1.3R</text>
             </g>
 
             <!-- current-price cursor: ambient, always visible, not part of the reveal story -->
             <g class="marker is-shown" data-marker="cursor">
-              <line class="chart__cursor" x1="0" y1="151" x2="600" y2="151" data-cursor-line/>
-              <circle class="chart__cursordot" cx="546" cy="151" r="3" data-cursor-dot/>
+              <line class="chart__cursor" x1="0" y1="114" x2="600" y2="114" data-cursor-line/>
+              <circle class="chart__cursordot" cx="538" cy="114" r="3" data-cursor-dot/>
             </g>
           </svg>
 
@@ -252,9 +278,10 @@
 
           <p class="sr-only">
             A replayed illustrative session: BOBCAT buys a dip and sells a peak for a gain,
-            then sells near a smaller peak and buys back lower for a second gain. Not live
-            data, not actual trading results. Tabs above switch between illustrative
-            sessions for BTC, ETH, NVDA and SPY.
+            sells near a smaller peak and buys back lower for a second gain, then buys a
+            pullback and sells a later peak for a third gain. Not live data, not actual
+            trading results. Tabs above switch between illustrative sessions for BTC, ETH,
+            NVDA and SPY.
           </p>
 
           <p class="chart__foot mono">ILLUSTRATIVE REPLAY — NOT LIVE DATA, NOT ACTUAL TRADING RESULTS</p>

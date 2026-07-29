@@ -159,8 +159,20 @@ hashes cannot be correlated across restarts.
   `main.js` maps how far you've scrolled through the runway to 0–1 and reveals
   candles/markers/the desk panel off that), so scrolling back up undoes it
   exactly rather than playing a separate reverse animation. The runway height
-  (`.scrollchart`, currently `130vh`) is the one knob for how fast the whole
+  (`.scrollchart`, currently `125vh`) is the one knob for how fast the whole
   sequence resolves.
+  Reveal timing lives in `main.js`: `BASE_SHOWN` (fraction of candles drawn at
+  scroll 0 — currently ~3 of 18), `AI_ON_AT` (the ACTIVE→AUTONOMOUS switch),
+  and `MARKER_AT` (per-marker thresholds `m1`…`m6`). Candles reveal linearly
+  across the whole runway, so the switch is set to fire at `0.45` — the point
+  where the chart has filled to its middle (~candle 9 of 18, x≈300 of 600),
+  i.e. "the graph reaches the halfway line" — together with the first trade's
+  BUY. The other five markers stagger out after it. **Invariant:** every
+  `MARKER_AT` threshold must be ≥ the progress at which its `data-candle-ref`
+  candle is revealed, or the marker floats in empty space before its candle is
+  drawn — the trap that made earlier retimes look broken. There's a check for
+  this in the scratchpad verification script; keep markers on candles that
+  exist.
   Because the chart is now a descendant of `.hero`, **`.hero` must never get
   `overflow: hidden` (or any non-`visible` overflow) back** — an ancestor with
   a scroll-clipping overflow value breaks `position: sticky` for descendants,
@@ -173,10 +185,13 @@ hashes cannot be correlated across restarts.
   globally.
   The **BTC / ETH / NVDA / SPY tabs** above the chart are real buttons that
   redraw the whole chart in place (`SYMBOLS` object + `renderSymbol()` in
-  `main.js`) — price, axis labels, all 14 candles and both marker pairs are
-  recomputed from each symbol's data plus fixed offsets from each candle's
-  high/low, so adding a fifth symbol is just adding a data object, not hand
-  placing new marker coordinates.
+  `main.js`) — price, axis labels, all 18 candles and all three trades'
+  markers are recomputed from each symbol's data plus fixed offsets from each
+  candle's high/low, so adding a fifth symbol is just adding a data object (18
+  candles + a `win1`/`win2`/`win3` outcomes triple), not hand-placing new
+  marker coordinates. The three trades are: buy a dip / sell a peak, sell a
+  smaller peak / buy back lower, buy a pullback / sell a later peak — markers
+  `m1`…`m6` on candles 3, 6, 9, 12, 14, 16.
   The **status panel** (`.deskpanel`) sits directly under the chart. The
   "ACTIVE TRADING / AUTONOMOUS TRADING" heading + "AI MODE OFF/ON" badge live
   on the left, always visible; the chips ("Analysing / News / Math / Market /
@@ -244,12 +259,13 @@ advice. Keep it that way — don't add real performance figures later without th
 same care, and don't let the chart's illustrative numbers drift toward looking
 like a genuine track record.
 
-Note on the chart's two example trades: both are currently wins (`+2.1R`,
-`+0.5R`). Earlier versions deliberately showed one win and one loss, on the
-theory that an all-win illustrative example reads as cherry-picked even with
-the "illustrative" caption. The second pair's direction was flipped (sell
-first, buy back lower) at explicit request, which flipped its outcome from a
-loss to a small win as a side effect. If a mixed win/loss example matters more
-than the requested direction, swap `data-role`/the marker text back on the
-`buy2`/`sell2` pair in `index.html` and change `data-outcome="win2"` back to a
-loss figure (and its offsets in `main.js`).
+Note on the chart's three example trades: all three are currently wins
+(`+2.1R`, `+0.5R`, `+1.3R`). This is a known trade-off — an all-win
+illustrative example can read as cherry-picked even with the "illustrative"
+caption. It's stayed all-wins through several rounds of requested changes to
+the animation, none of which asked for a loss. If a mixed win/loss example
+matters, turn one trade into a loss: flip that trade's exit so it closes at a
+worse price than the entry (in `SYMBOLS` in `main.js`), change its
+`data-outcome` figure to a negative `R`, and give its dot a loss style
+(`marker__dot--loss`, red) instead of `--win`. Trade three (`m5` buy / `m6`
+sell) is the easiest to convert without disturbing the earlier story beats.

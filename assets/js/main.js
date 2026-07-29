@@ -59,100 +59,119 @@
   }
 
   /* ------------------------------------------------------------ chart data
-     One dataset per tab. All four symbols share the same 14 fixed x-slots
-     and the same story shape (dip → peak → smaller peak → lower exit) so
-     the marker logic below never needs symbol-specific coordinates — only
-     each candle's high/low, which the marker placement derives from. Every
-     number here is illustrative, not sourced from any market feed. */
+     One dataset per tab. All four symbols share the same 18 fixed x-slots
+     and the same story shape — three illustrative trades: buy a dip / sell a
+     peak, sell a smaller peak / buy back lower, then buy a pullback / sell a
+     later peak — so the marker logic below never needs symbol-specific
+     coordinates, only each candle's high/low, which marker placement derives
+     from. Every number here is illustrative, not from any market feed.
+     Marker candles (by index): 3 dip, 6 peak, 9 smaller peak, 12 dip,
+     14 pullback, 16 peak. */
   var SYMBOLS = {
     BTC: {
       price: '238.40', changeText: '▲ 0.6%', changeUp: true,
       axis: ['241.80', '236.40', '232.10', '227.50'],
-      outcomes: { win1: '+2.1R', win2: '+0.5R' },
+      outcomes: { win1: '+2.1R', win2: '+0.5R', win3: '+1.3R' },
       candles: [
-        { high: 136, low: 154, bodyTop: 138, bodyBot: 150, up: true },
-        { high: 118, low: 140, bodyTop: 122, bodyBot: 138, up: true },
-        { high: 118, low: 134, bodyTop: 122, bodyBot: 130, up: false },
-        { high: 128, low: 148, bodyTop: 130, bodyBot: 146, up: false },
-        { high: 142, low: 156, bodyTop: 146, bodyBot: 152, up: false },
-        { high: 132, low: 154, bodyTop: 134, bodyBot: 152, up: true },
-        { high: 112, low: 136, bodyTop: 114, bodyBot: 134, up: true },
-        { high: 96,  low: 116, bodyTop: 100, bodyBot: 114, up: true },
-        { high: 98,  low: 114, bodyTop: 100, bodyBot: 112, up: false },
-        { high: 110, low: 128, bodyTop: 112, bodyBot: 126, up: false },
-        { high: 116, low: 130, bodyTop: 120, bodyBot: 126, up: true },
-        { high: 118, low: 136, bodyTop: 120, bodyBot: 132, up: false },
-        { high: 130, low: 148, bodyTop: 132, bodyBot: 144, up: false },
-        { high: 140, low: 154, bodyTop: 144, bodyBot: 150, up: false }
+        { high: 132, low: 152, bodyTop: 138, bodyBot: 150, up: true },
+        { high: 118, low: 140, bodyTop: 124, bodyBot: 136, up: true },
+        { high: 120, low: 140, bodyTop: 128, bodyBot: 138, up: false },
+        { high: 140, low: 160, bodyTop: 144, bodyBot: 156, up: false },
+        { high: 126, low: 148, bodyTop: 132, bodyBot: 144, up: true },
+        { high: 108, low: 132, bodyTop: 114, bodyBot: 128, up: true },
+        { high: 92,  low: 114, bodyTop: 98,  bodyBot: 110, up: true },
+        { high: 100, low: 120, bodyTop: 104, bodyBot: 116, up: false },
+        { high: 108, low: 128, bodyTop: 114, bodyBot: 124, up: false },
+        { high: 98,  low: 120, bodyTop: 104, bodyBot: 116, up: true },
+        { high: 112, low: 134, bodyTop: 118, bodyBot: 130, up: false },
+        { high: 126, low: 146, bodyTop: 130, bodyBot: 142, up: false },
+        { high: 138, low: 158, bodyTop: 142, bodyBot: 154, up: false },
+        { high: 128, low: 148, bodyTop: 132, bodyBot: 144, up: true },
+        { high: 120, low: 140, bodyTop: 126, bodyBot: 136, up: true },
+        { high: 108, low: 128, bodyTop: 112, bodyBot: 124, up: true },
+        { high: 94,  low: 114, bodyTop: 98,  bodyBot: 110, up: true },
+        { high: 104, low: 124, bodyTop: 108, bodyBot: 120, up: false }
       ]
     },
     ETH: {
       price: '3,286.10', changeText: '▲ 1.2%', changeUp: true,
       axis: ['3,412.60', '3,318.40', '3,236.80', '3,150.20'],
-      outcomes: { win1: '+2.6R', win2: '+0.7R' },
+      outcomes: { win1: '+2.6R', win2: '+0.7R', win3: '+1.5R' },
       candles: [
-        { high: 130, low: 152, bodyTop: 134, bodyBot: 148, up: true },
-        { high: 108, low: 136, bodyTop: 114, bodyBot: 132, up: true },
-        { high: 110, low: 130, bodyTop: 114, bodyBot: 126, up: false },
-        { high: 122, low: 150, bodyTop: 126, bodyBot: 146, up: false },
-        { high: 140, low: 160, bodyTop: 146, bodyBot: 156, up: false },
-        { high: 128, low: 158, bodyTop: 132, bodyBot: 156, up: true },
-        { high: 100, low: 132, bodyTop: 104, bodyBot: 128, up: true },
-        { high: 82,  low: 104, bodyTop: 88,  bodyBot: 102, up: true },
-        { high: 86,  low: 106, bodyTop: 90,  bodyBot: 104, up: false },
-        { high: 104, low: 126, bodyTop: 108, bodyBot: 124, up: false },
-        { high: 110, low: 128, bodyTop: 116, bodyBot: 124, up: true },
-        { high: 114, low: 136, bodyTop: 118, bodyBot: 132, up: false },
-        { high: 128, low: 150, bodyTop: 132, bodyBot: 146, up: false },
-        { high: 142, low: 160, bodyTop: 146, bodyBot: 156, up: false }
+        { high: 130, low: 162, bodyTop: 138, bodyBot: 154, up: true },
+        { high: 113, low: 139, bodyTop: 121, bodyBot: 131, up: true },
+        { high: 117, low: 147, bodyTop: 125, bodyBot: 139, up: false },
+        { high: 136, low: 168, bodyTop: 144, bodyBot: 160, up: false },
+        { high: 123, low: 149, bodyTop: 131, bodyBot: 141, up: true },
+        { high: 99,  low: 129, bodyTop: 107, bodyBot: 121, up: true },
+        { high: 82,  low: 114, bodyTop: 90,  bodyBot: 106, up: true },
+        { high: 95,  low: 121, bodyTop: 103, bodyBot: 113, up: false },
+        { high: 105, low: 135, bodyTop: 113, bodyBot: 127, up: false },
+        { high: 88,  low: 120, bodyTop: 96,  bodyBot: 112, up: true },
+        { high: 111, low: 137, bodyTop: 119, bodyBot: 129, up: false },
+        { high: 125, low: 155, bodyTop: 133, bodyBot: 147, up: false },
+        { high: 136, low: 168, bodyTop: 144, bodyBot: 160, up: false },
+        { high: 127, low: 153, bodyTop: 135, bodyBot: 145, up: true },
+        { high: 113, low: 143, bodyTop: 121, bodyBot: 135, up: true },
+        { high: 98,  low: 130, bodyTop: 106, bodyBot: 122, up: true },
+        { high: 87,  low: 113, bodyTop: 95,  bodyBot: 105, up: true },
+        { high: 101, low: 131, bodyTop: 109, bodyBot: 123, up: false }
       ]
     },
     NVDA: {
       price: '134.60', changeText: '▲ 0.4%', changeUp: true,
       axis: ['142.80', '138.20', '133.90', '129.40'],
-      outcomes: { win1: '+1.8R', win2: '+0.3R' },
+      outcomes: { win1: '+1.8R', win2: '+0.3R', win3: '+1.1R' },
       candles: [
-        { high: 140, low: 152, bodyTop: 142, bodyBot: 149, up: true },
-        { high: 126, low: 142, bodyTop: 129, bodyBot: 140, up: true },
-        { high: 127, low: 138, bodyTop: 129, bodyBot: 136, up: false },
-        { high: 134, low: 148, bodyTop: 136, bodyBot: 146, up: false },
-        { high: 144, low: 154, bodyTop: 147, bodyBot: 152, up: false },
-        { high: 136, low: 153, bodyTop: 138, bodyBot: 151, up: true },
-        { high: 122, low: 138, bodyTop: 124, bodyBot: 136, up: true },
-        { high: 110, low: 124, bodyTop: 113, bodyBot: 122, up: true },
-        { high: 112, low: 124, bodyTop: 114, bodyBot: 122, up: false },
-        { high: 122, low: 136, bodyTop: 124, bodyBot: 134, up: false },
-        { high: 126, low: 137, bodyTop: 130, bodyBot: 135, up: true },
-        { high: 129, low: 140, bodyTop: 131, bodyBot: 138, up: false },
-        { high: 136, low: 148, bodyTop: 138, bodyBot: 146, up: false },
-        { high: 145, low: 154, bodyTop: 147, bodyBot: 152, up: false }
+        { high: 124, low: 156, bodyTop: 132, bodyBot: 148, up: true },
+        { high: 117, low: 143, bodyTop: 125, bodyBot: 135, up: true },
+        { high: 123, low: 153, bodyTop: 131, bodyBot: 145, up: false },
+        { high: 132, low: 164, bodyTop: 140, bodyBot: 156, up: false },
+        { high: 127, low: 153, bodyTop: 135, bodyBot: 145, up: true },
+        { high: 107, low: 137, bodyTop: 115, bodyBot: 129, up: true },
+        { high: 90,  low: 122, bodyTop: 98,  bodyBot: 114, up: true },
+        { high: 103, low: 129, bodyTop: 111, bodyBot: 121, up: false },
+        { high: 111, low: 141, bodyTop: 119, bodyBot: 133, up: false },
+        { high: 96,  low: 128, bodyTop: 104, bodyBot: 120, up: true },
+        { high: 115, low: 141, bodyTop: 123, bodyBot: 133, up: false },
+        { high: 121, low: 151, bodyTop: 129, bodyBot: 143, up: false },
+        { high: 130, low: 162, bodyTop: 138, bodyBot: 154, up: false },
+        { high: 123, low: 149, bodyTop: 131, bodyBot: 141, up: true },
+        { high: 115, low: 145, bodyTop: 123, bodyBot: 137, up: true },
+        { high: 104, low: 136, bodyTop: 112, bodyBot: 128, up: true },
+        { high: 95,  low: 121, bodyTop: 103, bodyBot: 113, up: true },
+        { high: 103, low: 133, bodyTop: 111, bodyBot: 125, up: false }
       ]
     },
     SPY: {
       price: '576.85', changeText: '▲ 0.2%', changeUp: true,
       axis: ['582.40', '578.10', '574.30', '570.60'],
-      outcomes: { win1: '+1.4R', win2: '+0.4R' },
+      outcomes: { win1: '+1.4R', win2: '+0.4R', win3: '+0.9R' },
       candles: [
-        { high: 134, low: 150, bodyTop: 137, bodyBot: 147, up: true },
-        { high: 122, low: 142, bodyTop: 125, bodyBot: 139, up: true },
-        { high: 124, low: 136, bodyTop: 126, bodyBot: 134, up: false },
-        { high: 130, low: 148, bodyTop: 132, bodyBot: 145, up: false },
-        { high: 140, low: 152, bodyTop: 143, bodyBot: 149, up: false },
-        { high: 132, low: 151, bodyTop: 135, bodyBot: 149, up: true },
-        { high: 118, low: 136, bodyTop: 121, bodyBot: 134, up: true },
-        { high: 104, low: 120, bodyTop: 107, bodyBot: 118, up: true },
-        { high: 107, low: 120, bodyTop: 109, bodyBot: 118, up: false },
-        { high: 118, low: 132, bodyTop: 120, bodyBot: 130, up: false },
-        { high: 122, low: 133, bodyTop: 126, bodyBot: 131, up: true },
-        { high: 125, low: 138, bodyTop: 127, bodyBot: 136, up: false },
-        { high: 132, low: 146, bodyTop: 134, bodyBot: 144, up: false },
-        { high: 142, low: 152, bodyTop: 144, bodyBot: 149, up: false }
+        { high: 128, low: 160, bodyTop: 136, bodyBot: 152, up: true },
+        { high: 119, low: 145, bodyTop: 127, bodyBot: 137, up: true },
+        { high: 123, low: 153, bodyTop: 131, bodyBot: 145, up: false },
+        { high: 134, low: 166, bodyTop: 142, bodyBot: 158, up: false },
+        { high: 127, low: 153, bodyTop: 135, bodyBot: 145, up: true },
+        { high: 109, low: 139, bodyTop: 117, bodyBot: 131, up: true },
+        { high: 92,  low: 124, bodyTop: 100, bodyBot: 116, up: true },
+        { high: 105, low: 131, bodyTop: 113, bodyBot: 123, up: false },
+        { high: 111, low: 141, bodyTop: 119, bodyBot: 133, up: false },
+        { high: 98,  low: 130, bodyTop: 106, bodyBot: 122, up: true },
+        { high: 115, low: 141, bodyTop: 123, bodyBot: 133, up: false },
+        { high: 123, low: 153, bodyTop: 131, bodyBot: 145, up: false },
+        { high: 134, low: 166, bodyTop: 142, bodyBot: 158, up: false },
+        { high: 125, low: 151, bodyTop: 133, bodyBot: 143, up: true },
+        { high: 117, low: 147, bodyTop: 125, bodyBot: 139, up: true },
+        { high: 106, low: 138, bodyTop: 114, bodyBot: 130, up: true },
+        { high: 97,  low: 123, bodyTop: 105, bodyBot: 115, up: true },
+        { high: 105, low: 133, bodyTop: 113, bodyBot: 127, up: false }
       ]
     }
   };
 
-  var CANDLE_X = 26;   // first candle center
-  var CANDLE_SPACING = 40;
+  var CANDLE_X = 28;   // first candle center
+  var CANDLE_SPACING = 30;
   // Offsets from a candle's low/high to its marker's arrow tip / base / far
   // stem end / label baseline — the same shape used for every marker, just
   // anchored to whichever candle it's attached to.
@@ -251,10 +270,10 @@
         else placeSellMarker(g, x, c.high);
       });
 
-      var win1 = $('[data-outcome="win1"]', root);
-      var win2 = $('[data-outcome="win2"]', root);
-      if (win1 && data.outcomes.win1) win1.textContent = data.outcomes.win1;
-      if (win2 && data.outcomes.win2) win2.textContent = data.outcomes.win2;
+      Object.keys(data.outcomes).forEach(function (key) {
+        var el = $('[data-outcome="' + key + '"]', root);
+        if (el) el.textContent = data.outcomes[key];
+      });
 
       var last = data.candles[data.candles.length - 1];
       if (last && cursorLine && cursorDot) {
@@ -277,20 +296,17 @@
     renderSymbol('BTC');
 
     /* ---- scroll-driven reveal (unaffected by which symbol is showing) ---- */
-    var TOTAL_CANDLES = 14;
-    var BASE_SHOWN = 0.2;               // 3 of 14 candles drawn at progress 0
-    var CANDLES_DONE_AT = 0.6;          // all 14 candles are drawn by here, so
-                                        // the slower part (building the chart)
-                                        // is over before the AI events start —
-                                        // and every marker below always lands
-                                        // on a candle that already exists,
-                                        // never floating in empty space
-    // Once the chart is mostly built, the AI half plays FAST: AI mode + the
-    // first BUY fire together, then the remaining three trades stagger in
-    // quickly, all four done by ~0.82. No long "AI on, nothing happening"
-    // gap, and a short tail before the chart unpins.
-    var AI_ON_AT = 0.42;
-    var MARKER_AT = { buy1: .42, sell1: .55, buy2: .68, sell2: .82 };
+    var TOTAL_CANDLES = 18;
+    var BASE_SHOWN = 0.15;              // 3 of 18 candles drawn at progress 0
+    // Candles reveal steadily across the whole runway (no fast early ramp),
+    // so more of the chart is still being drawn as you scroll — that's the
+    // "add candles instead of slowing it" ask: more content, same pace.
+    // The AI switch fires when the chart has filled to its middle (~candle 9
+    // of 18, x≈300 of 600 → the halfway line), together with the first
+    // trade's BUY. The remaining five markers stagger out from there, one
+    // trade after another, each landing on a candle that's already drawn.
+    var AI_ON_AT = 0.45;
+    var MARKER_AT = { m1: .45, m2: .56, m3: .67, m4: .78, m5: .87, m6: .95 };
 
     function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
 
@@ -298,10 +314,7 @@
     var lastAiOn = null;
 
     function applyProgress(progress) {
-      // Candles reveal on their own faster clock (finished by CANDLES_DONE_AT)
-      // so the chart is complete before the AI markers start appearing.
-      var candleProgress = Math.min(1, progress / CANDLES_DONE_AT);
-      var revealCount = Math.ceil(TOTAL_CANDLES * (BASE_SHOWN + (1 - BASE_SHOWN) * candleProgress));
+      var revealCount = Math.ceil(TOTAL_CANDLES * (BASE_SHOWN + (1 - BASE_SHOWN) * progress));
       if (revealCount !== lastRevealCount) {
         lastRevealCount = revealCount;
         candles.forEach(function (el) {

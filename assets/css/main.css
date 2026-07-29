@@ -274,7 +274,7 @@ table { border-collapse: collapse; width: 100%; }
    is not a separate animation — it's the same progress value falling back
    through the same thresholds, so it undoes itself automatically.
    Runway is intentionally short so the sequence resolves quickly. */
-.scrollchart { position: relative; height: 110vh; }
+.scrollchart { position: relative; height: 125vh; }
 .scrollchart__pin { position: sticky; top: 76px; padding-block: 4px; }
 /* No-JS / reduced-motion escape hatch: collapse the runway and unstick the
    chart so it reads as one ordinary block, not a permanently-pinned one. */
