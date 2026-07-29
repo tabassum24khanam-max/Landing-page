@@ -1,5 +1,5 @@
 /* ============================================================================
-   ULTRAMAX — landing page behaviour
+   BOBCAT — landing page behaviour
    No dependencies. Degrades to a working static page without JS.
    ========================================================================= */
 (function () {
@@ -10,6 +10,38 @@
 
   function $(sel, root) { return (root || document).querySelector(sel); }
   function $$(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+
+  /* ------------------------------------------------------------ theme
+     Light is the hard default. The inline script in <head> already applied
+     a stored "dark" choice before paint, so this only needs to wire the
+     toggle and keep localStorage / the button / theme-color in sync. */
+  (function theme() {
+    var STORAGE_KEY = 'bobcat-theme';
+    var btn = $('[data-theme-toggle]');
+    var metaColor = $('meta[name="theme-color"]');
+    if (!btn) return;
+
+    function isDark() { return document.documentElement.getAttribute('data-theme') === 'dark'; }
+
+    function reflect() {
+      var dark = isDark();
+      btn.setAttribute('aria-pressed', String(dark));
+      btn.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
+      if (metaColor) metaColor.setAttribute('content', dark ? '#0a0a0b' : '#ffffff');
+    }
+    reflect();
+
+    btn.addEventListener('click', function () {
+      var next = isDark() ? 'light' : 'dark';
+      if (next === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+      }
+      try { localStorage.setItem(STORAGE_KEY, next); } catch (e) {}
+      reflect();
+    });
+  })();
 
   /* ------------------------------------------------------------ reveal */
   var revealTargets = $$('[data-reveal]');
@@ -35,20 +67,18 @@
     if (!term || !list) return;
 
     var SCRIPT = [
-      { tag: 'ANALYST', html: 'RSI(14) 61.8 · MACD bullish cross · vol regime <b>NORMAL</b>' },
-      { tag: 'ANALYST', html: 'Bull case: momentum + volume confirm. Counter-argument: resistance overhead.' },
-      { tag: 'INTEL',   html: '17 headlines scanned · 1 dominant catalyst identified' },
-      { tag: 'INTEL',   html: 'Catalyst assessment: <b>not yet priced in</b> · direction: bullish' },
-      { tag: 'INTEL',   html: 'Options flow: elevated call volume, non-standard size' },
-      { tag: 'JUDGE',   html: 'Risk officer notes reviewed — no correlated exposure open', accent: true },
-      { tag: 'JUDGE',   html: 'Vote 1/3 LONG · vote 2/3 LONG · vote 3/3 HOLD → majority LONG', accent: true },
-      { tag: 'JUDGE',   html: 'Sizing set from conviction, not enthusiasm. Ruling logged.', accent: true },
-      { tag: 'RISK',    html: 'Trailing stop armed · breakeven lock queued · correlation veto: clear' },
-      { tag: 'SENTRY',  html: 'Watching · 10s interval · directional threshold not met' },
-      { tag: 'ANALYST', html: 'Regime re-check: volatility contracting, no reclassification' },
-      { tag: 'INTEL',   html: 'No new high-impact filings in the last cycle' },
-      { tag: 'JUDGE',   html: 'Prior call on this asset: 2 of last 3 correct — weighted accordingly', accent: true },
-      { tag: 'RISK',    html: 'Time-decaying stop tightened on open short elsewhere in book' },
+      { tag: 'READ',    html: 'Reading price action, volume and structure across the book' },
+      { tag: 'READ',    html: 'Bull case building — <b>testing it against the strongest counter-argument</b>' },
+      { tag: 'CONTEXT', html: 'Scanning coverage for the one thing that actually moves this' },
+      { tag: 'CONTEXT', html: 'Assessing whether the market has <b>already priced it in</b>' },
+      { tag: 'JUDGE',   html: 'Cross-checking the read against the risk picture before sizing', accent: true },
+      { tag: 'JUDGE',   html: 'Ruling logged — sized on conviction, not enthusiasm', accent: true },
+      { tag: 'RISK',    html: 'Stop armed · correlation checked · nothing stacked twice' },
+      { tag: 'WATCH',   html: 'Watching every open position — nothing unusual yet' },
+      { tag: 'READ',    html: 'Volatility regime steady, no reclassification needed' },
+      { tag: 'CONTEXT', html: 'Nothing new since the last pass' },
+      { tag: 'JUDGE',   html: 'Weighing this call against how it has performed here before', accent: true },
+      { tag: 'RISK',    html: 'Tightening the stop on a position that has been open a while' },
     ];
 
     var i = 0;
@@ -107,7 +137,7 @@
     if (!link) return;
     var user = 'azk40772corp', domain = 'gmail.com';
     var address = user + '@' + domain;
-    link.href = 'mailto:' + address + '?subject=' + encodeURIComponent('ULTRAMAX early access');
+    link.href = 'mailto:' + address + '?subject=' + encodeURIComponent('BOBCAT early access');
     var label = $('[data-direct-mail-label]', link);
     if (label) label.textContent = 'or email us directly — ' + address;
   })();
@@ -120,9 +150,9 @@
      truth: without JS the browser posts there natively, and with JS we post to
      the same service's AJAX variant so the page can show its own success state
      instead of navigating away. Override everything with
-     window.ULTRAMAX_ENDPOINT if you move to a different provider. */
+     window.BOBCAT_ENDPOINT if you move to a different provider. */
   function endpointFor(form) {
-    if (window.ULTRAMAX_ENDPOINT) return window.ULTRAMAX_ENDPOINT;
+    if (window.BOBCAT_ENDPOINT) return window.BOBCAT_ENDPOINT;
     var action = form.getAttribute('action') || '';
     if (action.indexOf('formsubmit.co/') !== -1 && action.indexOf('/ajax/') === -1) {
       return action.replace('formsubmit.co/', 'formsubmit.co/ajax/');
@@ -221,14 +251,14 @@
             }
             if (body.error) { setNote(body.error, 'error'); return; }
             if (flagged && body.message) {
-              console.warn('ULTRAMAX: submission rejected by ' + endpoint + ' — ' + body.message);
+              console.warn('BOBCAT: submission rejected by ' + endpoint + ' — ' + body.message);
               setNote('That didn’t go through. Please try again, or email us directly.', 'error');
               return;
             }
             console.warn(
-              'ULTRAMAX: no signup endpoint at "' + endpoint + '" (HTTP ' + res.status + '). ' +
+              'BOBCAT: no signup endpoint at "' + endpoint + '" (HTTP ' + res.status + '). ' +
               'This page is likely on a static host with nothing listening. Point the form ' +
-              'action at a mail service, or set window.ULTRAMAX_ENDPOINT.'
+              'action at a mail service, or set window.BOBCAT_ENDPOINT.'
             );
             setNote('Signups aren’t connected on this address yet.', 'error');
             return;
@@ -257,6 +287,39 @@
         });
     });
   });
+
+  /* ------------------------------------------------------------ ticker
+     Ambient market wallpaper, not a performance claim — public tickers with
+     illustrative movement, unconnected to any BOBCAT trade or result. */
+  (function ticker() {
+    var track = $('[data-ticker-track]');
+    if (!track) return;
+
+    var ROW = [
+      ['BTC', '+1.4%', true], ['ETH', '−0.6%', false], ['NVDA', '+2.1%', true],
+      ['SPY', '+0.3%', true], ['AAPL', '−0.2%', false], ['TSLA', '+3.8%', true],
+      ['GOOGL', '+0.9%', true], ['XOM', '−0.4%', false], ['SOL', '+1.1%', true],
+      ['MSFT', '+0.5%', true]
+    ];
+
+    function renderRow() {
+      return ROW.map(function (r) {
+        var cls = r[2] ? 'up' : 'down';
+        var arrow = r[2] ? '▲' : '▼';
+        return '<span class="ticker__item mono"><b>' + r[0] + '</b> ' +
+          '<span class="' + cls + '">' + arrow + ' ' + r[1] + '</span></span>';
+      }).join('');
+    }
+
+    // duplicated once for a seamless loop (CSS translates exactly -50%)
+    track.innerHTML = renderRow() + renderRow();
+
+    if (reduced || !('IntersectionObserver' in window)) return;
+    var el = track.closest('.ticker');
+    new IntersectionObserver(function (entries) {
+      track.style.animationPlayState = entries[0].isIntersecting ? 'running' : 'paused';
+    }, { threshold: 0 }).observe(el);
+  })();
 
   /* ------------------------------------------------------------ year */
   var year = $('[data-year]');
