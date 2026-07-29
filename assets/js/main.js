@@ -129,6 +129,85 @@
     });
   })();
 
+  /* ------------------------------------------------------------ scroll chart
+     Pins the chart card while its tall wrapper scrolls underneath it, maps
+     that scroll distance to a 0–1 progress value, and reveals candles,
+     entry/exit markers and the desk panel's on/off state as thresholds are
+     crossed. There is no separate "reverse" animation: scrolling up simply
+     drives progress back down through the same thresholds, so it undoes
+     itself exactly. Reduced-motion and no-JS visitors get the finished
+     state — see the <noscript> block in index.html for the latter. */
+  (function scrollChart() {
+    var wrapper = $('[data-scrollchart]');
+    var pin = wrapper ? wrapper.querySelector('.scrollchart__pin') : null;
+    var root = $('[data-scrollchart-root]');
+    if (!wrapper || !pin || !root) return;
+
+    var candles = $$('.candle, .wick', root);
+    var markers = $$('[data-marker]', root).filter(function (el) { return el.dataset.marker !== 'cursor'; });
+    var deskpanel = $('[data-deskpanel]', root);
+
+    var TOTAL_CANDLES = 14;
+    var BASE_SHOWN = 0.2;               // fraction already drawn at progress 0
+    var AI_ON_AT = 0.5;
+    var MARKER_AT = { buy1: .55, sell1: .68, buy2: .82, sell2: .95 };
+
+    function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
+
+    var lastRevealCount = -1;
+    var lastAiOn = null;
+
+    function applyProgress(progress) {
+      var revealCount = Math.max(1, Math.ceil(TOTAL_CANDLES * (BASE_SHOWN + (1 - BASE_SHOWN) * progress)));
+      if (revealCount !== lastRevealCount) {
+        lastRevealCount = revealCount;
+        candles.forEach(function (el) {
+          el.classList.toggle('is-shown', Number(el.dataset.candle) < revealCount);
+        });
+      }
+
+      var aiOn = progress >= AI_ON_AT;
+      if (aiOn !== lastAiOn) {
+        lastAiOn = aiOn;
+        if (deskpanel) deskpanel.classList.toggle('is-ai-on', aiOn);
+      }
+
+      markers.forEach(function (el) {
+        var threshold = MARKER_AT[el.dataset.marker];
+        el.classList.toggle('is-shown', threshold !== undefined && progress >= threshold);
+      });
+    }
+
+    if (reduced) {
+      // No motion: show the finished story immediately, and don't pin an
+      // element that will never animate — that just traps the scroll.
+      wrapper.classList.add('is-static');
+      applyProgress(1);
+      return;
+    }
+
+    var ticking = false;
+    function onScroll() {
+      if (ticking) return;
+      ticking = true;
+      raf(function () {
+        ticking = false;
+        update();
+      });
+    }
+
+    function update() {
+      var rect = wrapper.getBoundingClientRect();
+      var scrollable = wrapper.offsetHeight - pin.offsetHeight;
+      var progress = scrollable > 1 ? clamp(-rect.top / scrollable, 0, 1) : 1;
+      applyProgress(progress);
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    update();
+  })();
+
   /* ------------------------------------------------------------ direct mail
      Points "email us directly" at a real inbox without exposing it to
      scraping in the raw page source. Change the address in one place. */
