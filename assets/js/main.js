@@ -278,12 +278,16 @@
 
     /* ---- scroll-driven reveal (unaffected by which symbol is showing) ---- */
     var TOTAL_CANDLES = 14;
-    var BASE_SHOWN = 0.25;              // fraction already drawn at progress 0
-    var AI_ON_AT = 0.58;                // ~just past pin engagement, so the
-                                        // desk panel appears in its OFF state
-                                        // first and flips ON once you scroll
-                                        // through it
-    var MARKER_AT = { buy1: .64, sell1: .74, buy2: .84, sell2: .94 };
+    var BASE_SHOWN = 0;                 // fraction already drawn at progress 0
+                                        // — 0 means the chart is literally
+                                        // empty on first load and every candle
+                                        // has to be scrolled in, per repeated
+                                        // "it should start from the start"
+    var AI_ON_AT = 0.78;                // pushed well past pin engagement so
+                                        // the desk panel sits in ACTIVE TRADING
+                                        // / focus for a good while before it
+                                        // ever flips to AUTONOMOUS TRADING
+    var MARKER_AT = { buy1: .82, sell1: .88, buy2: .93, sell2: .98 };
 
     function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
 
@@ -291,7 +295,9 @@
     var lastAiOn = null;
 
     function applyProgress(progress) {
-      var revealCount = Math.max(1, Math.ceil(TOTAL_CANDLES * (BASE_SHOWN + (1 - BASE_SHOWN) * progress)));
+      // No Math.max floor: BASE_SHOWN=0 means we intentionally want 0 candles
+      // at scroll 0, and clamping to 1 would defeat that "starts from empty".
+      var revealCount = Math.ceil(TOTAL_CANDLES * (BASE_SHOWN + (1 - BASE_SHOWN) * progress));
       if (revealCount !== lastRevealCount) {
         lastRevealCount = revealCount;
         candles.forEach(function (el) {
