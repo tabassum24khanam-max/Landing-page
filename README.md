@@ -11,7 +11,7 @@ Node itself, for the signup endpoint.
 ```
 index.html            the page
 assets/css/main.css   all styling
-assets/js/main.js     reveal, live desk feed, form handling
+assets/js/main.js     scroll-scrubbed chart, desk-panel chips, form handling
 assets/favicon.svg
 server.js             static host + POST /api/subscribe
 data/                 submissions (created at runtime, git-ignored)
@@ -150,15 +150,44 @@ hashes cannot be correlated across restarts.
   function near the top of `assets/js/main.js`. It's assembled from two string
   parts rather than written as a literal `mailto:` link, so it isn't handed to
   scrapers as plain text in the page source.
-- **The live desk feed** in the hero (`.term`) is a scripted, looping
-  transcript — clearly illustrative, not a log of real trades or real internal
-  system state. It pauses when scrolled off screen or the tab is hidden, and
-  shows a static excerpt instead of animating under `prefers-reduced-motion:
-  reduce`.
-- **The chart** (`.chart`, in the "Watch it reason" section) is a hand-authored
-  SVG replay, not a live feed and not connected to any market-data API. The
-  candles, entry/exit markers and R-multiples are fixed illustrative values —
-  see *Content honesty* below before changing that.
+- **The chart lives inside the hero, not below it.** `.scrollchart` sits
+  directly in `.hero`, with no card, border or background of its own — the
+  candles, price, tabs and desk panel are meant to read as part of the page,
+  not as a boxed-off widget. It's a hand-authored SVG replay, not a live feed
+  and not connected to any market-data API. Progress through it is a pure
+  function of scroll position (`position: sticky` pin + a tall runway div;
+  `main.js` maps how far you've scrolled through the runway to 0–1 and reveals
+  candles/markers/the desk panel off that), so scrolling back up undoes it
+  exactly rather than playing a separate reverse animation. The runway height
+  (`.scrollchart`, currently `130vh`) is the one knob for how fast the whole
+  sequence resolves.
+  Because the chart is now a descendant of `.hero`, **`.hero` must never get
+  `overflow: hidden` (or any non-`visible` overflow) back** — an ancestor with
+  a scroll-clipping overflow value breaks `position: sticky` for descendants,
+  since sticky positioning is computed against the nearest such ancestor's
+  scrollport rather than the viewport. That exact regression happened once
+  during the hero/chart merge (the pin silently stopped sticking, scrubbing
+  through empty space instead of the pinned chart) and was fixed by dropping
+  `overflow: hidden` from `.hero` — `.hero__bg` doesn't need it (it's already
+  `inset: 0`, fully contained) and `body` already guards horizontal overflow
+  globally.
+  The **BTC / ETH / NVDA / SPY tabs** above the chart are real buttons that
+  redraw the whole chart in place (`SYMBOLS` object + `renderSymbol()` in
+  `main.js`) — price, axis labels, all 14 candles and both marker pairs are
+  recomputed from each symbol's data plus fixed offsets from each candle's
+  high/low, so adding a fifth symbol is just adding a data object, not hand
+  placing new marker coordinates.
+  The **status panel** (`.deskpanel`) sits directly under the chart rather
+  than in its own bordered box, and its "Analysing / News / Math / Market /
+  Other" chips rotate through short illustrative lines once AI mode switches
+  on (`deskChips()` in `main.js`, one `setInterval` tick every 2.6s). The
+  "News" chip's lines are hand-written illustrative headline-shaped text, not
+  pulled from a real news source — there's no free, reliable, browser-safe
+  feed to pull real headlines from without adding a live dependency that could
+  break the homepage, and real headlines would risk implying the chart's
+  trades reacted to real news, which they didn't. All candles, entry/exit
+  markers and R-multiples on the chart are fixed illustrative values — see
+  *Content honesty* below before changing that.
 - **The ticker** (`.ticker`) is ambient wallpaper: public tickers with
   illustrative movement, unconnected to any BOBCAT trade or result. It's a CSS
   `translateX` loop, paused off screen via `IntersectionObserver` and disabled
@@ -199,3 +228,13 @@ states plainly that this is paper trading and that nothing here is financial
 advice. Keep it that way — don't add real performance figures later without the
 same care, and don't let the chart's illustrative numbers drift toward looking
 like a genuine track record.
+
+Note on the chart's two example trades: both are currently wins (`+2.1R`,
+`+0.5R`). Earlier versions deliberately showed one win and one loss, on the
+theory that an all-win illustrative example reads as cherry-picked even with
+the "illustrative" caption. The second pair's direction was flipped (sell
+first, buy back lower) at explicit request, which flipped its outcome from a
+loss to a small win as a side effect. If a mixed win/loss example matters more
+than the requested direction, swap `data-role`/the marker text back on the
+`buy2`/`sell2` pair in `index.html` and change `data-outcome="win2"` back to a
+loss figure (and its offsets in `main.js`).

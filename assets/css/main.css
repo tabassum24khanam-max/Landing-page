@@ -201,7 +201,7 @@ table { border-collapse: collapse; width: 100%; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ---------------------------------------------------------------- hero */
-.hero { position: relative; padding-top: clamp(28px, 4vw, 44px); padding-bottom: clamp(24px, 3vw, 36px); overflow: hidden; }
+.hero { position: relative; padding-top: clamp(28px, 4vw, 44px); padding-bottom: clamp(24px, 3vw, 36px); }
 
 .hero__bg {
   position: absolute; inset: 0; pointer-events: none;
@@ -212,12 +212,7 @@ table { border-collapse: collapse; width: 100%; }
   opacity: .7;
 }
 
-.hero__grid {
-  position: relative;
-  display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr);
-  gap: clamp(32px, 5vw, 56px); align-items: center;
-}
-@media (max-width: 940px) { .hero__grid { grid-template-columns: 1fr; } }
+.hero__intro { position: relative; max-width: 760px; }
 
 .badge {
   display: inline-flex; align-items: center; gap: 9px;
@@ -242,41 +237,6 @@ table { border-collapse: collapse; width: 100%; }
   display: block; text-align: center; margin-top: clamp(18px, 2.4vw, 28px);
   font-size: 11px; letter-spacing: .12em; color: var(--muted-2);
 }
-
-/* ---------------------------------------------------------------- terminal */
-.term {
-  background: var(--card); border: 1px solid var(--rule); border-radius: 8px;
-  overflow: hidden; box-shadow: var(--shadow);
-  transition: box-shadow .3s var(--ease), border-color .3s var(--ease);
-}
-.term:hover { box-shadow: 0 1px 2px rgba(0,0,0,.06), 0 26px 56px -26px var(--accent-line); }
-.term__bar {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 14px; border-bottom: 1px solid var(--rule-soft); background: var(--surface);
-}
-.term__dots { display: flex; gap: 5px; }
-.term__dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--rule); }
-.term__title { font-size: 11.5px; color: var(--muted-2); }
-.term__live { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 10.5px; letter-spacing: .08em; color: var(--accent); }
-.term__live-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); animation: blink 2.2s var(--ease) infinite; }
-@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: .25; } }
-
-.term__body { height: clamp(240px, 28vw, 310px); overflow: hidden; padding: 14px 14px 4px; position: relative; }
-.term__body::after {
-  content: ""; position: absolute; inset: auto 0 0 0; height: 44px;
-  background: linear-gradient(to bottom, transparent, var(--card));
-  pointer-events: none;
-}
-.feed { display: flex; flex-direction: column; gap: 9px; }
-.feed__line {
-  font-family: var(--mono); font-size: 12.5px; line-height: 1.5; color: var(--ink-2);
-  opacity: 0; transform: translateY(4px);
-  animation: linein .4s var(--ease-out) forwards;
-}
-@keyframes linein { to { opacity: 1; transform: none; } }
-.feed__tag { color: var(--muted-2); letter-spacing: .04em; }
-.feed__tag--judge { color: var(--accent); }
-.feed__line b { color: var(--ink); font-weight: 500; }
 
 /* ---------------------------------------------------------------- ticker marquee */
 .ticker {
@@ -304,42 +264,38 @@ table { border-collapse: collapse; width: 100%; }
 .ticker__item .down { color: var(--down); }
 @keyframes tickerscroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
-/* ---------------------------------------------------------------- chart */
-.chartsec { padding-block: clamp(32px, 3.6vw, 52px); }
+/* ---------------------------------------------------------------- chart
+   No card, no border, no shadow: this lives inside the hero and reads as
+   part of it, not a separate boxed-off section. */
 
 /* Scroll-scrubbed pin: the wrapper's extra height is the "scroll runway";
    main.js maps how far we've scrolled through it to a 0–1 progress value
    and reveals candles/markers/panel state accordingly. Scrolling back up
    is not a separate animation — it's the same progress value falling back
-   through the same thresholds, so it undoes itself automatically. */
-.scrollchart { position: relative; height: 230vh; }
-.scrollchart__pin { position: sticky; top: 76px; padding-block: 12px; }
+   through the same thresholds, so it undoes itself automatically.
+   Runway is intentionally short so the sequence resolves quickly. */
+.scrollchart { position: relative; height: 130vh; }
+.scrollchart__pin { position: sticky; top: 76px; padding-block: 4px; }
 /* No-JS / reduced-motion escape hatch: collapse the runway and unstick the
-   card so it reads as one ordinary block, not a permanently-pinned one. */
+   chart so it reads as one ordinary block, not a permanently-pinned one. */
 .scrollchart.is-static { height: auto; }
 .scrollchart.is-static .scrollchart__pin { position: static; }
 
-.chart {
-  margin-top: clamp(18px, 2.4vw, 26px);
-  background: var(--card); border: 1px solid var(--rule); border-radius: 8px;
-  padding: clamp(16px, 2.2vw, 24px);
-  box-shadow: var(--shadow);
-}
-.chart__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+.chart { margin-top: clamp(20px, 3vw, 36px); }
+.chart__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
 .chart__tabs { display: flex; gap: 4px; flex-wrap: wrap; }
 .chart__tab {
-  font-family: var(--mono); font-size: 11.5px; padding: 5px 10px; border-radius: 4px;
-  color: var(--muted-2); border: 1px solid transparent;
+  font-family: var(--mono); font-size: 12.5px; padding: 6px 12px; border-radius: 5px;
+  color: var(--muted-2); border: 1px solid transparent; cursor: pointer;
+  transition: color .2s var(--ease), border-color .2s var(--ease), background .2s var(--ease);
 }
+.chart__tab:hover { color: var(--ink-2); border-color: var(--rule); }
 .chart__tab--on { color: var(--accent); background: var(--accent-soft); border-color: var(--accent-line); }
 .chart__price { display: flex; align-items: baseline; gap: 8px; }
-.chart__price .mono { font-size: 15px; color: var(--ink); }
+.chart__price .mono { font-size: 17px; color: var(--ink); }
 .chart__price .up { color: var(--up); }
 
-.chart__body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 196px); gap: 18px; align-items: stretch; }
-@media (max-width: 700px) { .chart__body { grid-template-columns: 1fr; } }
-
-.chart__svg { width: 100%; height: auto; overflow: visible; }
+.chart__svg { width: 100%; height: auto; overflow: visible; display: block; }
 
 /* Candles/markers are revealed by JS toggling .is-shown as scroll progress
    crosses their threshold — a plain opacity/transform transition, not a
@@ -376,17 +332,20 @@ table { border-collapse: collapse; width: 100%; }
 @keyframes dotpulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
 
 /* ---------------------------------------------------------------- desk panel
-   Fills the space beside the chart. Off by default (dim, "ACTIVE TRADING /
-   focus"); flips on past the scroll midpoint ("AUTONOMOUS TRADING / go to
-   sleep") at the same moment the AI badge and analysis chips switch on. */
+   No card, no border — sits directly under the chart, in its empty lower
+   margin, so it reads as part of the chart rather than a widget beside it.
+   Off by default (bold "ACTIVE TRADING / focus"); flips on past the scroll
+   midpoint ("AUTONOMOUS TRADING / go to sleep") at the same moment the AI
+   badge and analysis chips switch on. */
 .deskpanel {
-  display: flex; flex-direction: column; justify-content: space-between; gap: 14px;
-  padding: 16px; border-radius: 6px; background: var(--surface); border: 1px solid var(--rule-soft);
+  display: flex; flex-wrap: wrap; align-items: center; gap: clamp(14px, 2.4vw, 28px);
+  padding-top: clamp(10px, 1.6vw, 18px); margin-top: 4px;
 }
+.deskpanel__top { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
 .deskpanel__badge {
-  display: inline-flex; align-items: center; gap: 8px; align-self: flex-start;
-  font-size: 10.5px; letter-spacing: .06em; padding: 5px 9px; border-radius: 999px;
-  border: 1px solid var(--rule); color: var(--muted-2);
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 11px; letter-spacing: .06em; padding: 6px 11px; border-radius: 999px;
+  border: 1px solid var(--rule); color: var(--muted-2); flex: none;
   transition: border-color .3s var(--ease), color .3s var(--ease);
 }
 .deskpanel__dot {
@@ -400,40 +359,58 @@ table { border-collapse: collapse; width: 100%; }
 .deskpanel.is-ai-on .deskpanel__badgeword--off { display: none; }
 .deskpanel.is-ai-on .deskpanel__badgeword--on { display: inline; }
 
-.deskpanel__state { position: relative; min-height: 46px; }
+/* The headline: bold and present even in its "off" state — this is not a
+   caption, it's a statement. */
+/* Both headline states are position: absolute (for the cross-fade), which
+   takes them out of flow — without an explicit min-width here, this box
+   collapses to ~0 and the chip row (margin-left: auto) slides left to
+   overlap the actual rendered text. min-width is in ch against the same
+   font-size clamp as .deskpanel__h, so it scales with it and stays sized
+   for "AUTONOMOUS TRADING", the longer of the two states. */
+.deskpanel__state {
+  position: relative; min-height: 40px; display: flex; align-items: center;
+  font-size: clamp(17px, 2vw, 21px); min-width: 22ch;
+}
 .deskpanel__h, .deskpanel__s {
-  position: absolute; inset: 0 0 auto 0; margin: 0; white-space: nowrap;
+  position: absolute; inset: auto auto auto 0; margin: 0; white-space: nowrap;
   transition: opacity .35s var(--ease), transform .35s var(--ease);
 }
-.deskpanel__h { font-size: 12.5px; font-weight: 700; letter-spacing: .015em; line-height: 1.3; }
-.deskpanel__s { top: 20px; font-size: 12px; color: var(--muted); }
-.deskpanel__h--off { color: var(--muted-2); opacity: 1; transform: none; }
+.deskpanel__h {
+  top: 0; font-size: clamp(17px, 2vw, 21px); font-weight: 800;
+  letter-spacing: -0.01em; line-height: 1.15;
+}
+.deskpanel__s { top: 27px; font-size: 12.5px; color: var(--muted); letter-spacing: .02em; }
+.deskpanel__h--off { color: var(--ink-2); opacity: 1; transform: none; }
 .deskpanel__h--on  { color: var(--accent); opacity: 0; transform: translateY(4px); }
 .deskpanel.is-ai-on .deskpanel__h--off { opacity: 0; transform: translateY(-4px); }
 .deskpanel.is-ai-on .deskpanel__h--on  { opacity: 1; transform: none; }
 
-.deskpanel__chips { display: flex; flex-direction: column; gap: 6px; }
+.deskpanel__chips { display: flex; flex-wrap: wrap; gap: 8px; margin-left: auto; }
 .deskpanel__chips li {
-  font-size: 10.5px; letter-spacing: .04em; padding: 5px 8px; border-radius: 4px;
-  background: var(--card); border: 1px solid var(--rule-soft); color: var(--muted-2);
-  opacity: 0; transform: translateX(-4px);
+  font-size: 11px; letter-spacing: .02em; padding: 6px 10px; border-radius: 5px;
+  background: var(--surface); border: 1px solid var(--rule-soft); color: var(--muted-2);
+  opacity: 0; transform: translateX(-4px); min-width: 88px; text-align: center;
   transition: opacity .3s var(--ease-out), transform .3s var(--ease-out), color .3s var(--ease), border-color .3s var(--ease);
 }
 .deskpanel.is-ai-on .deskpanel__chips li { opacity: 1; transform: none; color: var(--ink-2); border-color: var(--rule); }
 .deskpanel.is-ai-on .deskpanel__chips li:nth-child(1) { transition-delay: .02s; }
-.deskpanel.is-ai-on .deskpanel__chips li:nth-child(2) { transition-delay: .08s; }
-.deskpanel.is-ai-on .deskpanel__chips li:nth-child(3) { transition-delay: .14s; }
-.deskpanel.is-ai-on .deskpanel__chips li:nth-child(4) { transition-delay: .2s; }
-.deskpanel.is-ai-on .deskpanel__chips li:nth-child(5) { transition-delay: .26s; }
+.deskpanel.is-ai-on .deskpanel__chips li:nth-child(2) { transition-delay: .07s; }
+.deskpanel.is-ai-on .deskpanel__chips li:nth-child(3) { transition-delay: .12s; }
+.deskpanel.is-ai-on .deskpanel__chips li:nth-child(4) { transition-delay: .17s; }
+.deskpanel.is-ai-on .deskpanel__chips li:nth-child(5) { transition-delay: .22s; }
+@media (max-width: 640px) {
+  .deskpanel { flex-direction: column; align-items: flex-start; }
+  .deskpanel__chips { margin-left: 0; }
+}
 
 .chart__grid path { stroke: var(--rule-soft); stroke-width: 1; }
-.chart__axis text { font-family: var(--mono); font-size: 9.5px; fill: var(--muted-2); }
+.chart__axis text { font-family: var(--mono); font-size: 10.5px; fill: var(--muted-2); }
 
 .chart__cursor { stroke: var(--accent); stroke-width: 1; stroke-dasharray: 2 3; opacity: .6; }
 .chart__cursordot { fill: var(--accent); }
 .is-in .chart__cursordot { animation: dotpulse 2s var(--ease) infinite; }
 
-.chart__foot { margin-top: 12px; font-size: 10.5px; letter-spacing: .04em; color: var(--muted-2); }
+.chart__foot { margin-top: 14px; font-size: 10.5px; letter-spacing: .04em; color: var(--muted-2); }
 
 /* ---------------------------------------------------------------- strip */
 .strip { background: var(--surface); border-bottom: 1px solid var(--rule-soft); padding-block: 16px; }
@@ -604,7 +581,6 @@ table { border-collapse: collapse; width: 100%; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
   [data-reveal] { opacity: 1; transform: none; }
-  .feed__line { opacity: 1; transform: none; }
   .eqbar__fill { transform: scaleX(var(--p, 1)); }
   .candle, .wick { animation: none; transform: none; opacity: 1; }
   .marker { animation: none; opacity: 1; }
@@ -613,5 +589,5 @@ table { border-collapse: collapse; width: 100%; }
 }
 
 @media print {
-  .nav, .btn, .term, .ticker { display: none !important; }
+  .nav, .btn, .ticker { display: none !important; }
 }

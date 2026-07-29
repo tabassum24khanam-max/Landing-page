@@ -58,95 +58,225 @@
     revealTargets.forEach(function (el) { revealObserver.observe(el); });
   }
 
-  /* ------------------------------------------------------------ desk feed
-     A scripted, looping transcript of the four agents reasoning together.
-     Purely illustrative — not a log of real trades. Pauses off screen. */
-  (function feed() {
-    var term = $('[data-feed]');
-    var list = $('[data-feed-list]', term);
-    if (!term || !list) return;
-
-    var SCRIPT = [
-      { tag: 'READ',    html: 'Reading price action, volume and structure across the book' },
-      { tag: 'READ',    html: 'Bull case building — <b>testing it against the strongest counter-argument</b>' },
-      { tag: 'CONTEXT', html: 'Scanning coverage for the one thing that actually moves this' },
-      { tag: 'CONTEXT', html: 'Assessing whether the market has <b>already priced it in</b>' },
-      { tag: 'JUDGE',   html: 'Cross-checking the read against the risk picture before sizing', accent: true },
-      { tag: 'JUDGE',   html: 'Ruling logged — sized on conviction, not enthusiasm', accent: true },
-      { tag: 'RISK',    html: 'Stop armed · correlation checked · nothing stacked twice' },
-      { tag: 'WATCH',   html: 'Watching every open position — nothing unusual yet' },
-      { tag: 'READ',    html: 'Volatility regime steady, no reclassification needed' },
-      { tag: 'CONTEXT', html: 'Nothing new since the last pass' },
-      { tag: 'JUDGE',   html: 'Weighing this call against how it has performed here before', accent: true },
-      { tag: 'RISK',    html: 'Tightening the stop on a position that has been open a while' },
-    ];
-
-    var i = 0;
-    var MAX_LINES = 7;
-
-    function pushLine() {
-      var item = SCRIPT[i % SCRIPT.length];
-      i++;
-
-      var li = document.createElement('li');
-      li.className = 'feed__line';
-      var tagClass = item.accent ? 'feed__tag feed__tag--judge' : 'feed__tag';
-      li.innerHTML = '<span class="' + tagClass + '">[' + item.tag + ']</span> ' + item.html;
-      list.appendChild(li);
-
-      while (list.children.length > MAX_LINES) {
-        list.removeChild(list.firstElementChild);
-      }
-      term.querySelector('.term__body').scrollTop = 999999;
+  /* ------------------------------------------------------------ chart data
+     One dataset per tab. All four symbols share the same 14 fixed x-slots
+     and the same story shape (dip → peak → smaller peak → lower exit) so
+     the marker logic below never needs symbol-specific coordinates — only
+     each candle's high/low, which the marker placement derives from. Every
+     number here is illustrative, not sourced from any market feed. */
+  var SYMBOLS = {
+    BTC: {
+      price: '238.40', changeText: '▲ 0.6%', changeUp: true,
+      axis: ['241.80', '236.40', '232.10', '227.50'],
+      outcomes: { win1: '+2.1R', win2: '+0.5R' },
+      candles: [
+        { high: 136, low: 154, bodyTop: 138, bodyBot: 150, up: true },
+        { high: 118, low: 140, bodyTop: 122, bodyBot: 138, up: true },
+        { high: 118, low: 134, bodyTop: 122, bodyBot: 130, up: false },
+        { high: 128, low: 148, bodyTop: 130, bodyBot: 146, up: false },
+        { high: 142, low: 156, bodyTop: 146, bodyBot: 152, up: false },
+        { high: 132, low: 154, bodyTop: 134, bodyBot: 152, up: true },
+        { high: 112, low: 136, bodyTop: 114, bodyBot: 134, up: true },
+        { high: 96,  low: 116, bodyTop: 100, bodyBot: 114, up: true },
+        { high: 98,  low: 114, bodyTop: 100, bodyBot: 112, up: false },
+        { high: 110, low: 128, bodyTop: 112, bodyBot: 126, up: false },
+        { high: 116, low: 130, bodyTop: 120, bodyBot: 126, up: true },
+        { high: 118, low: 136, bodyTop: 120, bodyBot: 132, up: false },
+        { high: 130, low: 148, bodyTop: 132, bodyBot: 144, up: false },
+        { high: 140, low: 154, bodyTop: 144, bodyBot: 150, up: false }
+      ]
+    },
+    ETH: {
+      price: '3,286.10', changeText: '▲ 1.2%', changeUp: true,
+      axis: ['3,412.60', '3,318.40', '3,236.80', '3,150.20'],
+      outcomes: { win1: '+2.6R', win2: '+0.7R' },
+      candles: [
+        { high: 130, low: 152, bodyTop: 134, bodyBot: 148, up: true },
+        { high: 108, low: 136, bodyTop: 114, bodyBot: 132, up: true },
+        { high: 110, low: 130, bodyTop: 114, bodyBot: 126, up: false },
+        { high: 122, low: 150, bodyTop: 126, bodyBot: 146, up: false },
+        { high: 140, low: 160, bodyTop: 146, bodyBot: 156, up: false },
+        { high: 128, low: 158, bodyTop: 132, bodyBot: 156, up: true },
+        { high: 100, low: 132, bodyTop: 104, bodyBot: 128, up: true },
+        { high: 82,  low: 104, bodyTop: 88,  bodyBot: 102, up: true },
+        { high: 86,  low: 106, bodyTop: 90,  bodyBot: 104, up: false },
+        { high: 104, low: 126, bodyTop: 108, bodyBot: 124, up: false },
+        { high: 110, low: 128, bodyTop: 116, bodyBot: 124, up: true },
+        { high: 114, low: 136, bodyTop: 118, bodyBot: 132, up: false },
+        { high: 128, low: 150, bodyTop: 132, bodyBot: 146, up: false },
+        { high: 142, low: 160, bodyTop: 146, bodyBot: 156, up: false }
+      ]
+    },
+    NVDA: {
+      price: '134.60', changeText: '▲ 0.4%', changeUp: true,
+      axis: ['142.80', '138.20', '133.90', '129.40'],
+      outcomes: { win1: '+1.8R', win2: '+0.3R' },
+      candles: [
+        { high: 140, low: 152, bodyTop: 142, bodyBot: 149, up: true },
+        { high: 126, low: 142, bodyTop: 129, bodyBot: 140, up: true },
+        { high: 127, low: 138, bodyTop: 129, bodyBot: 136, up: false },
+        { high: 134, low: 148, bodyTop: 136, bodyBot: 146, up: false },
+        { high: 144, low: 154, bodyTop: 147, bodyBot: 152, up: false },
+        { high: 136, low: 153, bodyTop: 138, bodyBot: 151, up: true },
+        { high: 122, low: 138, bodyTop: 124, bodyBot: 136, up: true },
+        { high: 110, low: 124, bodyTop: 113, bodyBot: 122, up: true },
+        { high: 112, low: 124, bodyTop: 114, bodyBot: 122, up: false },
+        { high: 122, low: 136, bodyTop: 124, bodyBot: 134, up: false },
+        { high: 126, low: 137, bodyTop: 130, bodyBot: 135, up: true },
+        { high: 129, low: 140, bodyTop: 131, bodyBot: 138, up: false },
+        { high: 136, low: 148, bodyTop: 138, bodyBot: 146, up: false },
+        { high: 145, low: 154, bodyTop: 147, bodyBot: 152, up: false }
+      ]
+    },
+    SPY: {
+      price: '576.85', changeText: '▲ 0.2%', changeUp: true,
+      axis: ['582.40', '578.10', '574.30', '570.60'],
+      outcomes: { win1: '+1.4R', win2: '+0.4R' },
+      candles: [
+        { high: 134, low: 150, bodyTop: 137, bodyBot: 147, up: true },
+        { high: 122, low: 142, bodyTop: 125, bodyBot: 139, up: true },
+        { high: 124, low: 136, bodyTop: 126, bodyBot: 134, up: false },
+        { high: 130, low: 148, bodyTop: 132, bodyBot: 145, up: false },
+        { high: 140, low: 152, bodyTop: 143, bodyBot: 149, up: false },
+        { high: 132, low: 151, bodyTop: 135, bodyBot: 149, up: true },
+        { high: 118, low: 136, bodyTop: 121, bodyBot: 134, up: true },
+        { high: 104, low: 120, bodyTop: 107, bodyBot: 118, up: true },
+        { high: 107, low: 120, bodyTop: 109, bodyBot: 118, up: false },
+        { high: 118, low: 132, bodyTop: 120, bodyBot: 130, up: false },
+        { high: 122, low: 133, bodyTop: 126, bodyBot: 131, up: true },
+        { high: 125, low: 138, bodyTop: 127, bodyBot: 136, up: false },
+        { high: 132, low: 146, bodyTop: 134, bodyBot: 144, up: false },
+        { high: 142, low: 152, bodyTop: 144, bodyBot: 149, up: false }
+      ]
     }
+  };
 
-    var timer = null;
-    function start() {
-      if (timer || reduced) return;
-      if (!list.children.length) {
-        for (var n = 0; n < 5; n++) pushLine();
-      }
-      timer = setInterval(pushLine, 1900);
-    }
-    function stop() {
-      if (timer) { clearInterval(timer); timer = null; }
-    }
+  var CANDLE_X = 26;   // first candle center
+  var CANDLE_SPACING = 40;
+  // Offsets from a candle's low/high to its marker's arrow tip / base / far
+  // stem end / label baseline — the same shape used for every marker, just
+  // anchored to whichever candle it's attached to.
+  var BUY_OFFSET  = { apex: 6, base: 16, stem: 30, label: 46 };  // added to LOW
+  var SELL_OFFSET = { apex: 6, base: 16, stem: 30, label: 38 };  // subtracted from HIGH
 
-    if (reduced) {
-      for (var n = 0; n < 5; n++) pushLine();
-      return;
-    }
+  function candleX(i) { return CANDLE_X + i * CANDLE_SPACING; }
 
-    if ('IntersectionObserver' in window) {
-      new IntersectionObserver(function (entries) {
-        entries[0].isIntersecting ? start() : stop();
-      }, { threshold: 0 }).observe(term);
-    } else {
-      start();
-    }
-    document.addEventListener('visibilitychange', function () {
-      document.hidden ? stop() : start();
-    });
-  })();
+  function placeBuyMarker(group, cx, low) {
+    var apexY = low + BUY_OFFSET.apex, baseY = low + BUY_OFFSET.base;
+    var farY = low + BUY_OFFSET.stem, labelY = low + BUY_OFFSET.label;
+    var stem = group.querySelector('.marker__stem');
+    var poly = group.querySelector('polygon');
+    var text = group.querySelector('text');
+    if (stem) { stem.setAttribute('x1', cx); stem.setAttribute('y1', farY); stem.setAttribute('x2', cx); stem.setAttribute('y2', baseY); }
+    if (poly) poly.setAttribute('points', (cx - 6) + ',' + baseY + ' ' + (cx + 6) + ',' + baseY + ' ' + cx + ',' + apexY);
+    if (text) { text.setAttribute('x', cx); text.setAttribute('y', labelY); }
+  }
+
+  function placeSellMarker(group, cx, high) {
+    var apexY = high - SELL_OFFSET.apex, baseY = high - SELL_OFFSET.base;
+    var farY = high - SELL_OFFSET.stem, labelY = high - SELL_OFFSET.label;
+    var stem = group.querySelector('.marker__stem');
+    var poly = group.querySelector('polygon');
+    var text = group.querySelector('text');
+    if (text) { text.setAttribute('x', cx); text.setAttribute('y', labelY); }
+    if (stem) { stem.setAttribute('x1', cx); stem.setAttribute('y1', farY); stem.setAttribute('x2', cx); stem.setAttribute('y2', baseY); }
+    if (poly) poly.setAttribute('points', (cx - 6) + ',' + baseY + ' ' + (cx + 6) + ',' + baseY + ' ' + cx + ',' + apexY);
+  }
 
   /* ------------------------------------------------------------ scroll chart
-     Pins the chart card while its tall wrapper scrolls underneath it, maps
-     that scroll distance to a 0–1 progress value, and reveals candles,
-     entry/exit markers and the desk panel's on/off state as thresholds are
-     crossed. There is no separate "reverse" animation: scrolling up simply
-     drives progress back down through the same thresholds, so it undoes
-     itself exactly. Reduced-motion and no-JS visitors get the finished
-     state — see the <noscript> block in index.html for the latter. */
+     Pins the chart while its tall wrapper scrolls underneath it, maps that
+     scroll distance to a 0–1 progress value, and reveals candles, entry/exit
+     markers and the desk panel's on/off state as thresholds are crossed.
+     There is no separate "reverse" animation: scrolling up simply drives
+     progress back down through the same thresholds, so it undoes itself
+     exactly. Reduced-motion and no-JS visitors get the finished state — see
+     the <noscript> block in index.html for the latter. Also owns the symbol
+     tabs (redraws candles/markers in place) and the desk-panel chip text
+     rotation, since both live on the same DOM this module already holds. */
   (function scrollChart() {
     var wrapper = $('[data-scrollchart]');
     var pin = wrapper ? wrapper.querySelector('.scrollchart__pin') : null;
     var root = $('[data-scrollchart-root]');
-    if (!wrapper || !pin || !root) return;
+    var svg = $('[data-chart-svg]', root);
+    if (!wrapper || !pin || !root || !svg) return;
 
     var candles = $$('.candle, .wick', root);
-    var markers = $$('[data-marker]', root).filter(function (el) { return el.dataset.marker !== 'cursor'; });
+    var markerGroups = $$('[data-marker]', root);
+    var storyMarkers = markerGroups.filter(function (el) { return el.dataset.marker !== 'cursor'; });
     var deskpanel = $('[data-deskpanel]', root);
+    var priceEl = $('[data-price]', root);
+    var changeEl = $('[data-change]', root);
+    var axisTexts = $$('[data-axis] text', root);
+    var tabs = $$('[data-symbol-tabs] .chart__tab', root);
+    var cursorLine = $('[data-cursor-line]', root);
+    var cursorDot = $('[data-cursor-dot]', root);
 
+    /* ---- redraw for a symbol tab (BTC/ETH/NVDA/SPY) ---- */
+    function renderSymbol(key) {
+      var data = SYMBOLS[key];
+      if (!data) return;
+
+      if (priceEl) priceEl.textContent = data.price;
+      if (changeEl) {
+        changeEl.textContent = data.changeText;
+        changeEl.classList.toggle('up', data.changeUp);
+        changeEl.classList.toggle('down', !data.changeUp);
+      }
+      axisTexts.forEach(function (t, i) { if (data.axis[i] !== undefined) t.textContent = data.axis[i]; });
+
+      data.candles.forEach(function (c, i) {
+        var x = candleX(i);
+        var wick = svg.querySelector('.wick[data-candle="' + i + '"]');
+        var body = svg.querySelector('.candle[data-candle="' + i + '"]');
+        if (wick) {
+          wick.setAttribute('x1', x); wick.setAttribute('x2', x);
+          wick.setAttribute('y1', c.high); wick.setAttribute('y2', c.low);
+          wick.classList.toggle('wick--up', c.up); wick.classList.toggle('wick--down', !c.up);
+        }
+        if (body) {
+          body.setAttribute('x', x - 6); body.setAttribute('width', 12);
+          body.setAttribute('y', c.bodyTop); body.setAttribute('height', Math.max(2, c.bodyBot - c.bodyTop));
+          body.classList.toggle('candle--up', c.up); body.classList.toggle('candle--down', !c.up);
+        }
+      });
+
+      storyMarkers.forEach(function (g) {
+        var ref = g.dataset.candleRef;
+        if (ref === undefined) return; // the win/loss dot groups carry no geometry, just text
+        var idx = Number(ref);
+        var c = data.candles[idx];
+        if (!c) return;
+        var x = candleX(idx);
+        if (g.dataset.role === 'buy') placeBuyMarker(g, x, c.low);
+        else placeSellMarker(g, x, c.high);
+      });
+
+      var win1 = $('[data-outcome="win1"]', root);
+      var win2 = $('[data-outcome="win2"]', root);
+      if (win1 && data.outcomes.win1) win1.textContent = data.outcomes.win1;
+      if (win2 && data.outcomes.win2) win2.textContent = data.outcomes.win2;
+
+      var last = data.candles[data.candles.length - 1];
+      if (last && cursorLine && cursorDot) {
+        var cursorY = Math.round((last.high + last.low) / 2);
+        cursorLine.setAttribute('y1', cursorY); cursorLine.setAttribute('y2', cursorY);
+        cursorDot.setAttribute('cy', cursorY);
+      }
+    }
+
+    tabs.forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        if (tab.classList.contains('chart__tab--on')) return;
+        tabs.forEach(function (t) { t.classList.toggle('chart__tab--on', t === tab); });
+        renderSymbol(tab.dataset.symbol);
+      });
+    });
+
+    // The static markup already matches BTC exactly, but render once anyway
+    // so a typo in either place can never cause a silent mismatch.
+    renderSymbol('BTC');
+
+    /* ---- scroll-driven reveal (unaffected by which symbol is showing) ---- */
     var TOTAL_CANDLES = 14;
     var BASE_SHOWN = 0.2;               // fraction already drawn at progress 0
     var AI_ON_AT = 0.5;
@@ -172,7 +302,7 @@
         if (deskpanel) deskpanel.classList.toggle('is-ai-on', aiOn);
       }
 
-      markers.forEach(function (el) {
+      storyMarkers.forEach(function (el) {
         var threshold = MARKER_AT[el.dataset.marker];
         el.classList.toggle('is-shown', threshold !== undefined && progress >= threshold);
       });
@@ -206,6 +336,45 @@
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll, { passive: true });
     update();
+  })();
+
+  /* ------------------------------------------------------------ desk chips
+     Once AI mode is on, each chip cycles through a short set of illustrative
+     lines — not real headlines or real computed values, just enough motion
+     to read as "working." Costs one interval; skipped entirely under
+     reduced motion, and the no-JS path just shows each chip's static label. */
+  (function deskChips() {
+    if (reduced) return;
+    var deskpanel = $('[data-deskpanel]');
+    var chips = $$('[data-chip]');
+    if (!deskpanel || !chips.length) return;
+
+    var CONTENT = {
+      analyse: ['Analysing', 'Weighing the case', 'Reading structure', 'Cross-checking'],
+      news: [
+        'Fed holds rates steady', 'Chip-sector earnings beat estimates', 'Oil slips on demand outlook',
+        'Dollar index little changed', 'Jobless claims in line with forecast', 'Treasury yields drift higher'
+      ],
+      math: ['Volatility: contracting', 'Correlation: checked', 'Regime: stable', 'Spread: normal', 'Drawdown: within limits'],
+      market: ['Liquidity: normal', 'Order flow: balanced', 'Breadth: neutral', 'Momentum: building', 'Structure: intact'],
+      other: ['Filings: none new', 'Sentiment: neutral', 'Positioning: light', 'Calendar: clear', 'Risk: nominal']
+    };
+
+    // each chip starts at a different point in its own list, purely so
+    // they don't all read as "position 0" the moment AI mode switches on
+    var state = chips.map(function (el, i) {
+      return { el: el, key: el.dataset.chip, i: i };
+    });
+
+    setInterval(function () {
+      if (!deskpanel.classList.contains('is-ai-on')) return;
+      state.forEach(function (s) {
+        var list = CONTENT[s.key];
+        if (!list) return;
+        s.i = (s.i + 1) % list.length;
+        s.el.textContent = list[s.i];
+      });
+    }, 2600);
   })();
 
   /* ------------------------------------------------------------ direct mail
