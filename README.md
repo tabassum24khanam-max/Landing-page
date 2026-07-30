@@ -222,16 +222,23 @@ hashes cannot be correlated across restarts.
 - **The rig** (`#stack`, `.rig`) is a small architecture diagram between the
   hero chart and "How it works": a compact 4-node horizontal pipeline —
   SIGNALS IN → THREE READERS → THE JUDGE → RISK KERNEL — ending in a LIVE ·
-  GUARDED pill. `rig()` in `main.js` fires once when the section scrolls
-  into view: each node gets `.is-on` in sequence, and between them the link
-  gets `.is-lit` so an accent pulse travels its width (or its height, on
-  mobile where the pipeline stacks vertically). Runs once and stops —
-  permanent animation next to body copy competes with reading. Reduced
-  motion and no-JS both land on the finished lit state (all nodes on, all
-  links accent-coloured, pill glowing). An earlier version had a taller
-  pipeline + a separate scrolling "decision trace" terminal beside it;
-  that was too big and read as competing with the hero chart — kept small
-  and single-purpose here.
+  GUARDED pill. Each node carries a title, a short tag line, a one-sentence
+  description, and a small live-status row (a pulsing dot + word — "reading",
+  "weighing", "ruling", "guarding") so the diagram reads as informative on
+  its own, not just decorative. `rig()` in `main.js` fires once when the
+  section scrolls into view: each node gets `.is-on` in sequence, the link
+  after it gets `.is-lit` so an accent pulse travels its width (or height, on
+  mobile where the pipeline stacks vertically), and once a node is lit its
+  glyph keeps a slow breathing ring (`rigring`, staggered per node) so the
+  section still reads as "alive" after the one-shot reveal finishes rather
+  than going static. The sequenced part runs once and stops — permanent
+  animation next to body copy competes with reading; the glyph rings and
+  status-dot pulses are the only things that keep going. Reduced motion and
+  no-JS both land on the finished lit state (all nodes on, all links
+  accent-coloured, all status dots green, pill glowing) with the looping
+  parts suppressed. An earlier version had a taller pipeline + a separate
+  scrolling "decision trace" terminal beside it; that was too big and read
+  as competing with the hero chart — kept small and single-purpose here.
 - **Symbol tabs auto-cycle once on load.** After a short beat, the chart's
   BTC / ETH / NVDA / SPY tabs advance themselves through the four symbols
   (~3s per tab) so a landing visitor sees the tabs work without having to

@@ -50,6 +50,7 @@
   .rig__link { background: var(--accent-line) !important; }
   .rig__status { color: var(--up) !important; border-color: var(--accent-line) !important; }
   .rig__statusdot { background: var(--up) !important; }
+  .rig__statdot { background: var(--up) !important; }
 </style></noscript>
 </head>
 <body>
@@ -354,6 +355,8 @@
           </span>
           <span class="rig__title mono">SIGNALS IN</span>
           <span class="rig__cap">Market · wire · calendar</span>
+          <span class="rig__desc">Price, depth and headlines, ingested continuously.</span>
+          <span class="rig__stat mono"><i class="rig__statdot"></i>reading</span>
         </li>
         <li class="rig__link" aria-hidden="true"><i class="rig__pulse"></i></li>
         <li class="rig__node" data-rig-node="2">
@@ -362,6 +365,8 @@
           </span>
           <span class="rig__title mono">THREE READERS</span>
           <span class="rig__cap">Quant · context · counter-case</span>
+          <span class="rig__desc">Each reads independently, then has to defend its view.</span>
+          <span class="rig__stat mono"><i class="rig__statdot"></i>weighing</span>
         </li>
         <li class="rig__link" aria-hidden="true"><i class="rig__pulse"></i></li>
         <li class="rig__node" data-rig-node="3">
@@ -370,6 +375,8 @@
           </span>
           <span class="rig__title mono">THE JUDGE</span>
           <span class="rig__cap">Cross-checked. Default: flat.</span>
+          <span class="rig__desc">Weighs all three, can overrule any one with a reason.</span>
+          <span class="rig__stat mono"><i class="rig__statdot"></i>ruling</span>
         </li>
         <li class="rig__link" aria-hidden="true"><i class="rig__pulse"></i></li>
         <li class="rig__node" data-rig-node="4">
@@ -378,6 +385,8 @@
           </span>
           <span class="rig__title mono">RISK KERNEL</span>
           <span class="rig__cap">Mechanical. Always on.</span>
+          <span class="rig__desc">Trails stops and caps exposure, with or without the AI.</span>
+          <span class="rig__stat mono"><i class="rig__statdot"></i>guarding</span>
         </li>
       </ol>
       <p class="rig__status mono" data-rig-status><i class="rig__statusdot"></i>POSITION LIVE · GUARDED</p>
