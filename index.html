@@ -43,6 +43,12 @@
   .deskpanel__dot { background: var(--up) !important; }
   .deskpanel__badgeword--off { display: none !important; }
   .deskpanel__badgeword--on { display: inline !important; }
+  /* The rig's stages light up and its trace is typed by JS. Without it,
+     show the pipeline fully lit and hide the empty terminal body rather
+     than render a blank box with a stranded cursor. */
+  .node, .rig__out { opacity: 1 !important; transform: none !important; }
+  .node__led, .rig__outdot { background: var(--up) !important; }
+  .rig__log { display: none !important; }
 </style></noscript>
 </head>
 <body>
@@ -323,11 +329,117 @@
   <p class="strip__note mono" data-status role="status" aria-live="polite">No spam. One email when it opens.</p>
 </div>
 
+<!-- ═══════════════════════════ THE STACK ═══════════════════════════
+     What the system is made of, drawn as a live pipeline. The stage nodes
+     light up in order and the log types itself out once the rig scrolls
+     into view (see rig() in main.js). Every log line is illustrative —
+     it is not a capture of a real session. -->
+<section class="section section--rig" id="stack">
+  <div class="wrap">
+    <p class="kicker" data-reveal><span class="mono">01</span> The stack</p>
+    <h2 class="h2" data-reveal style="--d:.04s">Three readers, one ruling. <span class="dim">Then a layer that never sleeps.</span></h2>
+    <p class="lede" data-reveal style="--d:.08s">
+      Not one model with a prompt. Signals come in, three independent readers
+      work them in parallel, a separate adjudicator has to be convinced, and a
+      mechanical kernel holds the position long after the reasoning is done.
+    </p>
+
+    <div class="rig" data-rig data-reveal style="--d:.12s">
+
+      <!-- ── the pipeline ── -->
+      <div class="rig__flow">
+
+        <div class="rig__stage" data-rig-stage="1">
+          <p class="rig__label mono"><span class="rig__num">01</span> Ingest</p>
+          <div class="rig__row rig__row--feeds">
+            <div class="node"><span class="node__k mono">MARKET</span><span class="node__v mono">ticks · depth · structure</span></div>
+            <div class="node"><span class="node__k mono">NEWSWIRE</span><span class="node__v mono">headlines · releases</span></div>
+            <div class="node"><span class="node__k mono">CALENDAR</span><span class="node__v mono">filings · events</span></div>
+          </div>
+        </div>
+
+        <div class="rig__pipe" aria-hidden="true"><i class="rig__pulse"></i></div>
+
+        <div class="rig__stage" data-rig-stage="2">
+          <p class="rig__label mono"><span class="rig__num">02</span> Parallel reasoning</p>
+          <div class="rig__row rig__row--agents">
+            <div class="node node--agent">
+              <span class="node__k mono">QUANT READ</span>
+              <span class="node__t">Reads price action, volume and structure into a view.</span>
+              <span class="node__s mono"><i class="node__led"></i>weighing</span>
+            </div>
+            <div class="node node--agent">
+              <span class="node__k mono">CONTEXT READ</span>
+              <span class="node__t">Separates what moves a market from noise, and judges if it's priced in.</span>
+              <span class="node__s mono"><i class="node__led"></i>weighing</span>
+            </div>
+            <div class="node node--agent">
+              <span class="node__k mono">COUNTER-CASE</span>
+              <span class="node__t">States the strongest argument against the view before it counts.</span>
+              <span class="node__s mono"><i class="node__led"></i>weighing</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="rig__pipe" aria-hidden="true"><i class="rig__pulse"></i></div>
+
+        <div class="rig__stage" data-rig-stage="3">
+          <p class="rig__label mono"><span class="rig__num">03</span> Adjudication</p>
+          <div class="node node--wide node--judge">
+            <span class="node__k mono">THE JUDGE</span>
+            <span class="node__t">Weighs all three against a neutral risk picture, can overrule any of
+            them with a stated reason, and is cross-checked against itself before
+            anything is risked. Default state is flat.</span>
+          </div>
+        </div>
+
+        <div class="rig__pipe" aria-hidden="true"><i class="rig__pulse"></i></div>
+
+        <div class="rig__stage" data-rig-stage="4">
+          <p class="rig__label mono"><span class="rig__num">04</span> Risk kernel</p>
+          <div class="node node--wide node--kernel">
+            <span class="node__k mono">MECHANICAL · ALWAYS ON</span>
+            <span class="node__t">Holds every open position with or without the AI — stops that trail,
+            exposure caps, and a lightweight watcher that only interrupts the full
+            reasoning for something that actually matters.</span>
+          </div>
+        </div>
+
+        <div class="rig__pipe" aria-hidden="true"><i class="rig__pulse"></i></div>
+
+        <div class="rig__stage rig__stage--out" data-rig-stage="5">
+          <p class="rig__out mono"><i class="rig__outdot"></i>POSITION LIVE · GUARDED</p>
+        </div>
+      </div>
+
+      <!-- ── the terminal ── -->
+      <div class="rig__term">
+        <div class="rig__termbar">
+          <span class="rig__dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="mono">bobcat · decision trace</span>
+        </div>
+        <ol class="rig__log mono" data-rig-log aria-hidden="true"></ol>
+        <p class="rig__termfoot mono">ILLUSTRATIVE TRACE — NOT A REAL SESSION</p>
+      </div>
+    </div>
+
+    <p class="sr-only">
+      BOBCAT is built as a pipeline. Market data, newswire and calendar events are
+      ingested, then read in parallel by three independent reasoners: a quantitative
+      read of price structure, a context read of what is already priced in, and a
+      counter-case that argues against the view. A separate adjudicator weighs all
+      three against a neutral risk picture and can overrule any of them, and is
+      cross-checked before anything is risked. A mechanical risk kernel then holds
+      the position continuously, with or without the AI.
+    </p>
+  </div>
+</section>
+
 <!-- ═══════════════════════════ HOW IT WORKS ═══════════════════════════ -->
 <section class="section" id="how">
 
   <div class="wrap">
-    <p class="kicker" data-reveal><span class="mono">01</span> How it works</p>
+    <p class="kicker" data-reveal><span class="mono">02</span> How it works</p>
     <h2 class="h2" data-reveal style="--d:.04s">It reasons. <span class="dim">It doesn't just react.</span></h2>
     <p class="lede" data-reveal style="--d:.08s">
       No single model guesses. A market read, a case built against it, and a decision that
@@ -461,7 +573,7 @@
 <section class="section section--signup" id="signup">
   <div class="wrap signup">
     <div class="signup__copy">
-      <p class="kicker" data-reveal><span class="mono">02</span> Early access</p>
+      <p class="kicker" data-reveal><span class="mono">03</span> Early access</p>
       <h2 class="h2 h2--tight" data-reveal style="--d:.04s">Be first in <span class="dim">when it opens.</span></h2>
       <p class="lede" data-reveal style="--d:.1s">
         BOBCAT is currently paper trading — simulated capital against live market data.

@@ -419,6 +419,90 @@
     }, 2600);
   })();
 
+  /* ------------------------------------------------------------ the rig
+     The architecture pipeline in #stack. When it scrolls into view the
+     stages light up in order and the decision trace types itself out
+     beside them. Runs once — it's an explainer, not a loop, so it doesn't
+     keep pulling attention while the visitor reads. Reduced motion and
+     no-JS both land on the same finished state (lit stages, full log). */
+  (function rig() {
+    var root = $('[data-rig]');
+    var log = $('[data-rig-log]');
+    if (!root || !log) return;
+
+    var stages = $$('[data-rig-stage]', root);
+    // Illustrative only — this is a scripted trace of the shape of a
+    // decision, not a capture of a real one. Keep it that way.
+    var TRACE = [
+      { at: 1, k: 'ingest',  v: 'market · 18 symbols streaming' },
+      { at: 1, k: 'ingest',  v: 'wire · 3 releases in window' },
+      { at: 2, k: 'quant',   v: 'structure read · trend intact' },
+      { at: 2, k: 'context', v: 'headline weighed · largely priced' },
+      { at: 2, k: 'counter', v: 'strongest objection stated' },
+      { at: 3, k: 'judge',   v: 'quant ▸ long   context ▸ neutral' },
+      { at: 3, k: 'judge',   v: 'cross-check passed' },
+      { at: 3, k: 'judge',   v: 'ruling · long, sized 0.4×' },
+      { at: 4, k: 'risk',    v: 'stop armed · trails with trade' },
+      { at: 4, k: 'risk',    v: 'exposure capped · no stacking' },
+      { at: 5, k: 'live',    v: 'position open · watcher attached' }
+    ];
+
+    function line(entry) {
+      var li = document.createElement('li');
+      var b = document.createElement('b');
+      b.textContent = entry.k;
+      var span = document.createElement('span');
+      span.textContent = entry.v;
+      li.appendChild(b);
+      li.appendChild(span);
+      li.className = 'is-hit';
+      log.appendChild(li);
+    }
+
+    function finish() {
+      root.classList.add('is-live');
+      stages.forEach(function (s) { s.classList.add('is-on'); });
+      log.textContent = '';
+      TRACE.forEach(line);
+    }
+
+    if (reduced || !('IntersectionObserver' in window)) { finish(); return; }
+
+    var started = false;
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting || started) return;
+        started = true;
+        observer.disconnect();
+        root.classList.add('is-live');
+
+        // Walk the stages in order; each one lights up, then its own trace
+        // lines print before the next stage starts.
+        var i = 0;
+        (function step() {
+          if (i >= stages.length) return;
+          var stage = stages[i];
+          var n = Number(stage.dataset.rigStage);
+          stage.classList.add('is-on');
+
+          var lines = TRACE.filter(function (t) { return t.at === n; });
+          var j = 0;
+          (function printLine() {
+            if (j < lines.length) {
+              line(lines[j++]);
+              setTimeout(printLine, 260);
+              return;
+            }
+            i++;
+            setTimeout(step, 340);
+          })();
+        })();
+      });
+    }, { threshold: 0.25 });
+
+    observer.observe(root);
+  })();
+
   /* ------------------------------------------------------------ direct mail
      Points "email us directly" at a real inbox without exposing it to
      scraping in the raw page source. Change the address in one place. */

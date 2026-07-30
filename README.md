@@ -219,6 +219,19 @@ hashes cannot be correlated across restarts.
   the candles are already drawn on first load (before any scroll). The
   runway height (`.scrollchart`, currently `95vh`) controls how much scroll
   distance the full reveal takes; shorter is faster.
+- **The rig** (`#stack`, `.rig`) is the architecture explainer that sits
+  between the hero chart and "How it works": a five-stage pipeline (ingest →
+  three parallel readers → adjudication → risk kernel → live position) beside
+  a terminal-styled "decision trace". `rig()` in `main.js` fires once when the
+  section scrolls into view: each stage gets `.is-on` in order, and that
+  stage's trace lines print before the next one starts. It deliberately does
+  **not** loop — it's an explainer, and a permanent animation next to body
+  copy just competes with reading. The trace lines are a scripted illustration
+  of the *shape* of a decision, not a capture of a real one, and the panel is
+  captioned as such; keep them at that altitude (see *Copy is deliberately
+  high-level* below). Reduced motion and no-JS both land on the finished
+  state — with no JS the terminal body is hidden rather than rendering an
+  empty box with a stranded cursor.
 - **The ticker** (`.ticker`) is ambient wallpaper: public tickers with
   illustrative movement, unconnected to any BOBCAT trade or result. It's a CSS
   `translateX` loop, paused off screen via `IntersectionObserver` and disabled
