@@ -219,19 +219,26 @@ hashes cannot be correlated across restarts.
   the candles are already drawn on first load (before any scroll). The
   runway height (`.scrollchart`, currently `95vh`) controls how much scroll
   distance the full reveal takes; shorter is faster.
-- **The rig** (`#stack`, `.rig`) is the architecture explainer that sits
-  between the hero chart and "How it works": a five-stage pipeline (ingest →
-  three parallel readers → adjudication → risk kernel → live position) beside
-  a terminal-styled "decision trace". `rig()` in `main.js` fires once when the
-  section scrolls into view: each stage gets `.is-on` in order, and that
-  stage's trace lines print before the next one starts. It deliberately does
-  **not** loop — it's an explainer, and a permanent animation next to body
-  copy just competes with reading. The trace lines are a scripted illustration
-  of the *shape* of a decision, not a capture of a real one, and the panel is
-  captioned as such; keep them at that altitude (see *Copy is deliberately
-  high-level* below). Reduced motion and no-JS both land on the finished
-  state — with no JS the terminal body is hidden rather than rendering an
-  empty box with a stranded cursor.
+- **The rig** (`#stack`, `.rig`) is a small architecture diagram between the
+  hero chart and "How it works": a compact 4-node horizontal pipeline —
+  SIGNALS IN → THREE READERS → THE JUDGE → RISK KERNEL — ending in a LIVE ·
+  GUARDED pill. `rig()` in `main.js` fires once when the section scrolls
+  into view: each node gets `.is-on` in sequence, and between them the link
+  gets `.is-lit` so an accent pulse travels its width (or its height, on
+  mobile where the pipeline stacks vertically). Runs once and stops —
+  permanent animation next to body copy competes with reading. Reduced
+  motion and no-JS both land on the finished lit state (all nodes on, all
+  links accent-coloured, pill glowing). An earlier version had a taller
+  pipeline + a separate scrolling "decision trace" terminal beside it;
+  that was too big and read as competing with the hero chart — kept small
+  and single-purpose here.
+- **Symbol tabs auto-cycle once on load.** After a short beat, the chart's
+  BTC / ETH / NVDA / SPY tabs advance themselves through the four symbols
+  (~3s per tab) so a landing visitor sees the tabs work without having to
+  touch them. Any real tap OR scrolling past the chart cancels the cycle
+  immediately; skipped entirely under reduced motion. Programmatic clicks
+  set `isTrusted=false`, so the user-click listener that stops the cycle
+  doesn't fire from our own dispatches (`autoCycleTabs()` in `main.js`).
 - **The ticker** (`.ticker`) is ambient wallpaper: public tickers with
   illustrative movement, unconnected to any BOBCAT trade or result. It's a CSS
   `translateX` loop, paused off screen via `IntersectionObserver` and disabled

@@ -43,12 +43,13 @@
   .deskpanel__dot { background: var(--up) !important; }
   .deskpanel__badgeword--off { display: none !important; }
   .deskpanel__badgeword--on { display: inline !important; }
-  /* The rig's stages light up and its trace is typed by JS. Without it,
-     show the pipeline fully lit and hide the empty terminal body rather
-     than render a blank box with a stranded cursor. */
-  .node, .rig__out { opacity: 1 !important; transform: none !important; }
-  .node__led, .rig__outdot { background: var(--up) !important; }
-  .rig__log { display: none !important; }
+  /* The rig's nodes light up and pulses travel between them via JS —
+     without it, show the finished lit pipeline directly. */
+  .rig__node { opacity: 1 !important; transform: none !important; color: var(--ink-2) !important; border-color: var(--rule) !important; }
+  .rig__glyph { color: var(--accent) !important; border-color: var(--accent-line) !important; }
+  .rig__link { background: var(--accent-line) !important; }
+  .rig__status { color: var(--up) !important; border-color: var(--accent-line) !important; }
+  .rig__statusdot { background: var(--up) !important; }
 </style></noscript>
 </head>
 <body>
@@ -99,14 +100,14 @@
     </p>
 
     <h1 class="hero__title" data-reveal style="--d:.06s">
-      An autonomous trading desk,<br><span class="dim">run entirely by AI.</span>
+      It has to win an argument with itself <span class="dim">before it risks your money.</span>
     </h1>
 
     <p class="hero__lede" data-reveal style="--d:.16s">
-      Most trading bots follow a script: if an indicator crosses a line, trade. BOBCAT
-      reasons instead — it argues with itself before committing to a view, cross-checks
-      that view before it's trusted, and a mechanical layer guards every open position
-      without waiting for the AI to weigh in again.
+      Most trading bots blow up the same way — confident and wrong at the same time.
+      BOBCAT isn't allowed to be. Three independent readers, a judge that can overrule
+      any of them, and a mechanical layer that holds every position long after the
+      reasoning stops.
     </p>
 
     <div class="hero__actions" data-reveal style="--d:.24s">
@@ -116,6 +117,7 @@
         <svg viewBox="0 0 16 16" aria-hidden="true" class="btn__down"><path d="M8 3v10M4 9l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </a>
     </div>
+    <a class="hero__trust mono" data-reveal style="--d:.32s" href="#how">We show the open losses too — scroll for how →</a>
   </div>
 
   <!-- tall scroll track; the chart pins and plays as you scroll through it — no card,
@@ -330,107 +332,65 @@
 </div>
 
 <!-- ═══════════════════════════ THE STACK ═══════════════════════════
-     What the system is made of, drawn as a live pipeline. The stage nodes
-     light up in order and the log types itself out once the rig scrolls
-     into view (see rig() in main.js). Every log line is illustrative —
-     it is not a capture of a real session. -->
+     What the system is made of, drawn as a compact horizontal pipeline.
+     Nodes activate in order and an accent pulse travels between them once
+     the section scrolls into view (see rig() in main.js). Deliberately
+     small — a diagram, not a section that competes with the chart above. -->
 <section class="section section--rig" id="stack">
   <div class="wrap">
     <p class="kicker" data-reveal><span class="mono">01</span> The stack</p>
     <h2 class="h2" data-reveal style="--d:.04s">Three readers, one ruling. <span class="dim">Then a layer that never sleeps.</span></h2>
-    <p class="lede" data-reveal style="--d:.08s">
-      Not one model with a prompt. Signals come in, three independent readers
-      work them in parallel, a separate adjudicator has to be convinced, and a
-      mechanical kernel holds the position long after the reasoning is done.
+    <p class="lede lede--tight" data-reveal style="--d:.08s">
+      Signals in, three independent readers, a judge that can overrule any of
+      them, and a mechanical layer that holds the position long after the
+      reasoning stops.
     </p>
 
-    <div class="rig" data-rig data-reveal style="--d:.12s">
-
-      <!-- ── the pipeline ── -->
-      <div class="rig__flow">
-
-        <div class="rig__stage" data-rig-stage="1">
-          <p class="rig__label mono"><span class="rig__num">01</span> Ingest</p>
-          <div class="rig__row rig__row--feeds">
-            <div class="node"><span class="node__k mono">MARKET</span><span class="node__v mono">ticks · depth · structure</span></div>
-            <div class="node"><span class="node__k mono">NEWSWIRE</span><span class="node__v mono">headlines · releases</span></div>
-            <div class="node"><span class="node__k mono">CALENDAR</span><span class="node__v mono">filings · events</span></div>
-          </div>
-        </div>
-
-        <div class="rig__pipe" aria-hidden="true"><i class="rig__pulse"></i></div>
-
-        <div class="rig__stage" data-rig-stage="2">
-          <p class="rig__label mono"><span class="rig__num">02</span> Parallel reasoning</p>
-          <div class="rig__row rig__row--agents">
-            <div class="node node--agent">
-              <span class="node__k mono">QUANT READ</span>
-              <span class="node__t">Reads price action, volume and structure into a view.</span>
-              <span class="node__s mono"><i class="node__led"></i>weighing</span>
-            </div>
-            <div class="node node--agent">
-              <span class="node__k mono">CONTEXT READ</span>
-              <span class="node__t">Separates what moves a market from noise, and judges if it's priced in.</span>
-              <span class="node__s mono"><i class="node__led"></i>weighing</span>
-            </div>
-            <div class="node node--agent">
-              <span class="node__k mono">COUNTER-CASE</span>
-              <span class="node__t">States the strongest argument against the view before it counts.</span>
-              <span class="node__s mono"><i class="node__led"></i>weighing</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="rig__pipe" aria-hidden="true"><i class="rig__pulse"></i></div>
-
-        <div class="rig__stage" data-rig-stage="3">
-          <p class="rig__label mono"><span class="rig__num">03</span> Adjudication</p>
-          <div class="node node--wide node--judge">
-            <span class="node__k mono">THE JUDGE</span>
-            <span class="node__t">Weighs all three against a neutral risk picture, can overrule any of
-            them with a stated reason, and is cross-checked against itself before
-            anything is risked. Default state is flat.</span>
-          </div>
-        </div>
-
-        <div class="rig__pipe" aria-hidden="true"><i class="rig__pulse"></i></div>
-
-        <div class="rig__stage" data-rig-stage="4">
-          <p class="rig__label mono"><span class="rig__num">04</span> Risk kernel</p>
-          <div class="node node--wide node--kernel">
-            <span class="node__k mono">MECHANICAL · ALWAYS ON</span>
-            <span class="node__t">Holds every open position with or without the AI — stops that trail,
-            exposure caps, and a lightweight watcher that only interrupts the full
-            reasoning for something that actually matters.</span>
-          </div>
-        </div>
-
-        <div class="rig__pipe" aria-hidden="true"><i class="rig__pulse"></i></div>
-
-        <div class="rig__stage rig__stage--out" data-rig-stage="5">
-          <p class="rig__out mono"><i class="rig__outdot"></i>POSITION LIVE · GUARDED</p>
-        </div>
-      </div>
-
-      <!-- ── the terminal ── -->
-      <div class="rig__term">
-        <div class="rig__termbar">
-          <span class="rig__dots" aria-hidden="true"><i></i><i></i><i></i></span>
-          <span class="mono">bobcat · decision trace</span>
-        </div>
-        <ol class="rig__log mono" data-rig-log aria-hidden="true"></ol>
-        <p class="rig__termfoot mono">ILLUSTRATIVE TRACE — NOT A REAL SESSION</p>
-      </div>
+    <div class="rig" data-rig data-reveal style="--d:.14s" role="figure" aria-label="Decision pipeline: signals into three parallel readers, into an adjudicator that cross-checks itself, into a mechanical risk kernel, resulting in a live guarded position.">
+      <ol class="rig__flow">
+        <li class="rig__node" data-rig-node="1">
+          <span class="rig__glyph" aria-hidden="true">
+            <svg viewBox="0 0 28 28"><path d="M4 20 L9 14 L13 18 L18 8 L24 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="rig__title mono">SIGNALS IN</span>
+          <span class="rig__cap">Market · wire · calendar</span>
+        </li>
+        <li class="rig__link" aria-hidden="true"><i class="rig__pulse"></i></li>
+        <li class="rig__node" data-rig-node="2">
+          <span class="rig__glyph" aria-hidden="true">
+            <svg viewBox="0 0 28 28"><circle cx="7" cy="14" r="3" fill="currentColor"/><circle cx="14" cy="14" r="3" fill="currentColor"/><circle cx="21" cy="14" r="3" fill="currentColor"/></svg>
+          </span>
+          <span class="rig__title mono">THREE READERS</span>
+          <span class="rig__cap">Quant · context · counter-case</span>
+        </li>
+        <li class="rig__link" aria-hidden="true"><i class="rig__pulse"></i></li>
+        <li class="rig__node" data-rig-node="3">
+          <span class="rig__glyph" aria-hidden="true">
+            <svg viewBox="0 0 28 28"><path d="M14 5 L23 22 L5 22 Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="rig__title mono">THE JUDGE</span>
+          <span class="rig__cap">Cross-checked. Default: flat.</span>
+        </li>
+        <li class="rig__link" aria-hidden="true"><i class="rig__pulse"></i></li>
+        <li class="rig__node" data-rig-node="4">
+          <span class="rig__glyph" aria-hidden="true">
+            <svg viewBox="0 0 28 28"><path d="M14 4 L23 8 V15 C23 20 19 23 14 25 C9 23 5 20 5 15 V8 Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="rig__title mono">RISK KERNEL</span>
+          <span class="rig__cap">Mechanical. Always on.</span>
+        </li>
+      </ol>
+      <p class="rig__status mono" data-rig-status><i class="rig__statusdot"></i>POSITION LIVE · GUARDED</p>
     </div>
 
     <p class="sr-only">
-      BOBCAT is built as a pipeline. Market data, newswire and calendar events are
-      ingested, then read in parallel by three independent reasoners: a quantitative
-      read of price structure, a context read of what is already priced in, and a
-      counter-case that argues against the view. A separate adjudicator weighs all
-      three against a neutral risk picture and can overrule any of them, and is
-      cross-checked before anything is risked. A mechanical risk kernel then holds
-      the position continuously, with or without the AI.
+      BOBCAT is a pipeline. Signals from market data, newswires and the calendar
+      are read in parallel by three independent reasoners — a quantitative read of
+      price structure, a context read of what is already priced in, and a
+      counter-case that argues against the view. A separate judge weighs all
+      three against a neutral risk picture, can overrule any of them, and is
+      cross-checked before anything is risked. A mechanical risk kernel then
+      holds the position continuously, with or without the AI.
     </p>
   </div>
 </section>
@@ -577,7 +537,8 @@
       <h2 class="h2 h2--tight" data-reveal style="--d:.04s">Be first in <span class="dim">when it opens.</span></h2>
       <p class="lede" data-reveal style="--d:.1s">
         BOBCAT is currently paper trading — simulated capital against live market data.
-        Leave your email and we'll write the moment access opens. Or just email us directly.
+        When it opens, the early list gets in first. Everyone else waits.
+        Leave your email, or write to us directly.
       </p>
       <a class="directmail mono" data-reveal style="--d:.16s" id="direct-mail" href="#">
         <svg viewBox="0 0 20 16" aria-hidden="true"><path d="M1 2h18v12H1z M1 2l9 7 9-7" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>

@@ -232,6 +232,13 @@ table { border-collapse: collapse; width: 100%; }
 }
 .hero__lede { margin-top: 20px; max-width: 54ch; font-size: clamp(15px, 1.3vw, 16.5px); color: var(--muted); line-height: 1.62; }
 .hero__actions { margin-top: 22px; display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+.hero__trust {
+  display: inline-block; margin-top: 14px;
+  font-size: 11.5px; letter-spacing: .04em; color: var(--muted-2);
+  border-bottom: 1px dotted var(--rule);
+  transition: color .2s var(--ease), border-color .2s var(--ease);
+}
+.hero__trust:hover, .hero__trust:focus-visible { color: var(--accent); border-bottom-color: var(--accent-line); }
 
 .hero__scroll {
   display: block; text-align: center; margin-top: clamp(18px, 2.4vw, 28px);
@@ -450,130 +457,97 @@ table { border-collapse: collapse; width: 100%; }
 .strip__note.is-ok { color: var(--accent); }
 
 /* ---------------------------------------------------------------- the rig
-   The architecture pipeline + decision-trace terminal. Stages light up in
-   order once the rig scrolls into view (JS adds .is-live, then per-stage
-   .is-on); the terminal types its log alongside. Everything degrades to the
-   finished lit state under reduced motion and no-JS — see the <noscript>
-   block in index.html. */
+   Compact horizontal pipeline. Nodes activate in sequence once the rig
+   scrolls into view (JS toggles .is-live on the rig, then .is-on on each
+   node), and an accent pulse travels each link between them. Deliberately
+   small — a diagram, not a section that competes with the chart above.
+   Reduced-motion + no-JS both land on the finished lit state (see
+   `@media (prefers-reduced-motion: reduce)` below and the <noscript>
+   block in index.html). */
 .rig {
-  margin-top: clamp(22px, 3vw, 34px);
-  display: grid; gap: clamp(16px, 2.2vw, 26px);
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr);
-  align-items: start;
-}
-@media (max-width: 900px) { .rig { grid-template-columns: 1fr; } }
-
-.rig__flow { display: flex; flex-direction: column; }
-.rig__label { font-size: 10.5px; letter-spacing: .14em; color: var(--muted-2); margin-bottom: 8px; text-transform: uppercase; }
-.rig__num { color: var(--accent); margin-right: 6px; }
-.rig__row { display: grid; gap: 8px; }
-.rig__row--feeds  { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.rig__row--agents { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-@media (max-width: 700px) {
-  .rig__row--feeds, .rig__row--agents { grid-template-columns: 1fr; }
-  /* full-width cards don't need the equal-height floor the 3-up grid does,
-     and keeping it just strands the status line at the bottom of a gap */
-  .node--agent { min-height: 0; }
-  .node__s { margin-top: 2px; }
-}
-
-/* connector between stages, with a pulse that runs down it while live */
-.rig__pipe {
-  position: relative; height: clamp(20px, 2.6vw, 30px);
-  margin: 2px auto; width: 1px; background: var(--rule);
-}
-.rig__pulse {
-  position: absolute; left: 50%; top: 0; width: 5px; height: 5px; margin-left: -2.5px;
-  border-radius: 50%; background: var(--accent); opacity: 0;
-}
-.rig.is-live .rig__pulse { animation: rigpulse 2.4s var(--ease) infinite; }
-.rig.is-live .rig__pipe:nth-of-type(2) .rig__pulse { animation-delay: .2s; }
-.rig.is-live .rig__pipe:nth-of-type(4) .rig__pulse { animation-delay: .4s; }
-.rig.is-live .rig__pipe:nth-of-type(6) .rig__pulse { animation-delay: .6s; }
-@keyframes rigpulse {
-  0%   { top: 0;    opacity: 0; }
-  15%  { opacity: 1; }
-  85%  { opacity: 1; }
-  100% { top: 100%; opacity: 0; }
-}
-
-/* nodes */
-.node {
-  display: flex; flex-direction: column; gap: 5px;
-  padding: 10px 12px; border-radius: 8px;
-  background: var(--surface); border: 1px solid var(--rule-soft);
-  opacity: 0; transform: translateY(6px);
-  transition: opacity .45s var(--ease-out), transform .45s var(--ease-out),
-              border-color .45s var(--ease), background-color .45s var(--ease);
-}
-.rig__stage.is-on .node { opacity: 1; transform: none; border-color: var(--rule); }
-.rig__stage.is-on .node:nth-child(2) { transition-delay: .08s; }
-.rig__stage.is-on .node:nth-child(3) { transition-delay: .16s; }
-.node--wide { padding: 12px 14px; }
-.node__k { font-size: 10px; letter-spacing: .12em; color: var(--muted-2); }
-.rig__stage.is-on .node__k { color: var(--accent); }
-.node__v { font-size: 11px; color: var(--muted); }
-.node__t { font-size: 13.5px; color: var(--ink-2); line-height: 1.5; }
-.node--agent { min-height: 118px; }
-.node__s {
-  margin-top: auto; display: inline-flex; align-items: center; gap: 6px;
-  font-size: 10.5px; color: var(--muted-2);
-}
-.node__led {
-  width: 5px; height: 5px; border-radius: 50%; background: var(--muted-2); flex: none;
-  transition: background .4s var(--ease), box-shadow .4s var(--ease);
-}
-.rig__stage.is-on .node__led {
-  background: var(--up); box-shadow: 0 0 0 3px color-mix(in srgb, var(--up) 20%, transparent);
-}
-.rig__stage.is-on .node--judge  { border-color: var(--accent-line); }
-.rig__stage.is-on .node--kernel { border-color: var(--accent-line); }
-
-.rig__stage--out { text-align: center; }
-.rig__out {
-  display: inline-flex; align-items: center; gap: 8px;
-  font-size: 11px; letter-spacing: .1em; color: var(--muted-2);
-  border: 1px solid var(--rule-soft); border-radius: 999px; padding: 7px 14px;
-  opacity: 0; transform: translateY(6px);
-  transition: opacity .45s var(--ease-out), transform .45s var(--ease-out),
-              border-color .45s var(--ease), color .45s var(--ease);
-}
-.rig__stage--out.is-on .rig__out { opacity: 1; transform: none; color: var(--up); border-color: var(--accent-line); }
-.rig__outdot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted-2); flex: none; }
-.rig__stage--out.is-on .rig__outdot { background: var(--up); box-shadow: 0 0 0 3px color-mix(in srgb, var(--up) 20%, transparent); }
-
-/* terminal */
-.rig__term {
-  position: sticky; top: 92px;
-  border: 1px solid var(--rule); border-radius: 10px; overflow: hidden;
+  margin-top: clamp(20px, 2.6vw, 30px);
+  padding: clamp(16px, 2vw, 22px);
+  border: 1px solid var(--rule-soft); border-radius: 12px;
   background: var(--surface);
 }
-@media (max-width: 900px) { .rig__term { position: static; } }
-.rig__termbar {
-  display: flex; align-items: center; gap: 9px;
-  padding: 9px 12px; border-bottom: 1px solid var(--rule-soft);
-  font-size: 10.5px; letter-spacing: .06em; color: var(--muted-2);
-  background: var(--surface-2);
+.rig__flow {
+  display: flex; align-items: stretch; gap: 6px;
+  margin: 0; padding: 0; list-style: none;
 }
-.rig__dots { display: inline-flex; gap: 4px; }
-.rig__dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--rule); }
-.rig__log {
-  margin: 0; padding: 12px; min-height: 232px;
-  font-size: 11.5px; line-height: 1.85; color: var(--muted);
-  display: flex; flex-direction: column; gap: 1px;
+@media (max-width: 760px) { .rig__flow { flex-direction: column; align-items: stretch; } }
+
+.rig__node {
+  flex: 1 1 0; min-width: 0;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 12px 8px; border-radius: 8px;
+  background: var(--bg); border: 1px solid var(--rule-soft);
+  color: var(--muted-2); text-align: center;
+  opacity: 0; transform: translateY(6px);
+  transition: opacity .35s var(--ease-out), transform .35s var(--ease-out),
+              border-color .35s var(--ease), color .35s var(--ease);
 }
-.rig__log li { display: flex; gap: 8px; }
-.rig__log li b { color: var(--accent); font-weight: 500; flex: none; min-width: 62px; }
-.rig__log li.is-hit span { color: var(--ink-2); }
-.rig__log li::after { content: ""; }
-.rig__log li:last-child::after {
-  content: "▍"; color: var(--accent); margin-left: 2px;
+.rig__node.is-on { opacity: 1; transform: none; color: var(--ink-2); border-color: var(--rule); }
+.rig__glyph {
+  width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 50%; border: 1px solid var(--rule-soft); color: var(--muted-2);
+  transition: color .35s var(--ease), border-color .35s var(--ease), box-shadow .35s var(--ease);
 }
-.rig.is-live .rig__log li:last-child::after { animation: rigblink 1.1s steps(2, start) infinite; }
-@keyframes rigblink { to { opacity: 0; } }
-.rig__termfoot {
-  padding: 9px 12px; border-top: 1px solid var(--rule-soft);
-  font-size: 9.5px; letter-spacing: .08em; color: var(--muted-2);
+.rig__glyph svg { width: 20px; height: 20px; }
+.rig__node.is-on .rig__glyph {
+  color: var(--accent); border-color: var(--accent-line);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 10%, transparent);
+}
+.rig__title { font-size: 10.5px; letter-spacing: .1em; }
+.rig__cap { font-size: 11.5px; color: var(--muted); line-height: 1.4; max-width: 22ch; }
+
+/* link between nodes: a thin line with an accent pulse traveling it */
+.rig__link {
+  flex: 0 0 clamp(24px, 3vw, 40px);
+  align-self: center; position: relative;
+  height: 1px; background: var(--rule-soft);
+}
+.rig__pulse {
+  position: absolute; top: 50%; left: 0; width: 6px; height: 6px; margin-top: -3px;
+  border-radius: 50%; background: var(--accent); opacity: 0;
+}
+.rig.is-live .rig__link.is-lit { background: var(--accent-line); }
+.rig.is-live .rig__link.is-lit .rig__pulse { animation: rigpulseH .55s var(--ease-out) forwards; }
+@keyframes rigpulseH {
+  0%   { left: 0;    opacity: 0; }
+  15%  { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { left: calc(100% - 6px); opacity: 0; }
+}
+@media (max-width: 760px) {
+  .rig__link { flex: 0 0 18px; width: 1px; height: 18px; background: var(--rule-soft); margin: 0 auto; }
+  .rig__pulse { left: 50%; top: 0; margin: 0; margin-left: -3px; }
+  .rig.is-live .rig__link.is-lit .rig__pulse { animation: rigpulseV .55s var(--ease-out) forwards; }
+  @keyframes rigpulseV {
+    0%   { top: 0;    opacity: 0; }
+    15%  { opacity: 1; }
+    85%  { opacity: 1; }
+    100% { top: calc(100% - 6px); opacity: 0; }
+  }
+}
+
+.rig__status {
+  display: inline-flex; align-items: center; gap: 8px;
+  margin-top: 14px; padding: 6px 12px;
+  font-size: 10.5px; letter-spacing: .1em; color: var(--muted-2);
+  border: 1px solid var(--rule-soft); border-radius: 999px;
+  transition: color .35s var(--ease), border-color .35s var(--ease);
+}
+.rig__statusdot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted-2); }
+.rig.is-live .rig__status.is-on {
+  color: var(--up); border-color: var(--accent-line);
+}
+.rig.is-live .rig__status.is-on .rig__statusdot {
+  background: var(--up); box-shadow: 0 0 0 3px color-mix(in srgb, var(--up) 20%, transparent);
+  animation: rigdotpulse 2s var(--ease) infinite;
+}
+@keyframes rigdotpulse {
+  0%,100% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--up) 20%, transparent); }
+  50%     { box-shadow: 0 0 0 7px color-mix(in srgb, var(--up) 4%, transparent); }
 }
 
 /* ---------------------------------------------------------------- agents */
@@ -732,6 +706,12 @@ table { border-collapse: collapse; width: 100%; }
   .marker { animation: none; opacity: 1; }
   .marker__dot { animation: none; }
   .ticker__track { animation: none; }
+  /* rig lands on the finished lit state — no sequenced fade */
+  .rig__node { opacity: 1; transform: none; color: var(--ink-2); border-color: var(--rule); }
+  .rig__glyph { color: var(--accent); border-color: var(--accent-line); }
+  .rig__link { background: var(--accent-line); }
+  .rig__status { color: var(--up); border-color: var(--accent-line); }
+  .rig__statusdot { background: var(--up); }
 }
 
 @media print {
