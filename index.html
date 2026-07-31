@@ -51,6 +51,14 @@
   .rig__status { color: var(--up) !important; border-color: var(--accent-line) !important; }
   .rig__statusdot { background: var(--up) !important; }
   .rig__statdot { background: var(--up) !important; }
+  /* The divergence chart is revealed by widening a clip rect from JS, and
+     the comparison rows / risk guards are armed from JS. Without it, drop
+     the clip so the finished chart shows and light everything directly. */
+  .diverge__plot { clip-path: none !important; }
+  .diverge__note { opacity: 1 !important; }
+  .lrow[data-lrow] { opacity: 1 !important; transform: none !important; }
+  .arm { opacity: 1 !important; color: var(--up) !important; }
+  .arm::before { background: var(--up) !important; }
 </style></noscript>
 </head>
 <body>
@@ -457,28 +465,25 @@
         <p class="lower__label mono">Between decisions — mechanical, always on</p>
         <h3 class="lower__t">The risk layer</h3>
         <p class="lower__sub">Guards every open position continuously, with or without the AI.</p>
-        <ul class="riskgrid">
-          <li><span class="dash" aria-hidden="true"></span><span class="riskgrid__t">Stops that move with the trade, never against it</span></li>
-          <li><span class="dash" aria-hidden="true"></span><span class="riskgrid__t">Won't be shaken out by a two-second spike</span></li>
-          <li><span class="dash" aria-hidden="true"></span><span class="riskgrid__t">Never stacks the same bet twice</span></li>
-          <li><span class="dash" aria-hidden="true"></span><span class="riskgrid__t">Shrinks itself in markets going nowhere</span></li>
-          <li><span class="dash" aria-hidden="true"></span><span class="riskgrid__t">Tightens the instant real news breaks</span></li>
-          <li><span class="dash" aria-hidden="true"></span><span class="riskgrid__t">Flips a position when the thesis genuinely does</span></li>
+        <!-- each guard "arms" in sequence when the card scrolls into view:
+             an accent sweep crosses the row, then its ARMED tag lights (riskArm()
+             in main.js). Without JS / under reduced motion they read as armed. -->
+        <ul class="riskgrid" data-riskgrid>
+          <li data-arm><span class="dash" aria-hidden="true"></span><span class="riskgrid__t">Stops that move with the trade, never against it</span><span class="arm mono" aria-hidden="true">ARMED</span></li>
+          <li data-arm><span class="dash" aria-hidden="true"></span><span class="riskgrid__t">Won't be shaken out by a two-second spike</span><span class="arm mono" aria-hidden="true">ARMED</span></li>
+          <li data-arm><span class="dash" aria-hidden="true"></span><span class="riskgrid__t">Never stacks the same bet twice</span><span class="arm mono" aria-hidden="true">ARMED</span></li>
+          <li data-arm><span class="dash" aria-hidden="true"></span><span class="riskgrid__t">Shrinks itself in markets going nowhere</span><span class="arm mono" aria-hidden="true">ARMED</span></li>
+          <li data-arm><span class="dash" aria-hidden="true"></span><span class="riskgrid__t">Tightens the instant real news breaks</span><span class="arm mono" aria-hidden="true">ARMED</span></li>
+          <li data-arm><span class="dash" aria-hidden="true"></span><span class="riskgrid__t">Flips a position when the thesis genuinely does</span><span class="arm mono" aria-hidden="true">ARMED</span></li>
         </ul>
       </div>
 
       <div class="lower__side">
-        <div class="sidecard" data-reveal style="--d:.1s">
+        <div class="sidecard sidecard--sentinel" data-reveal style="--d:.1s">
           <h3 class="sidecard__t">Always watching</h3>
-          <p class="sidecard__k mono">between AI cycles</p>
+          <p class="sidecard__k mono"><i class="sentinel__dot" aria-hidden="true"></i>between AI cycles</p>
           <p>A sentinel stays on every open position and only interrupts the full
           reasoning early for something that actually matters — not for noise.</p>
-        </div>
-        <div class="sidecard" data-reveal style="--d:.16s">
-          <h3 class="sidecard__t">Proven against a control</h3>
-          <p class="sidecard__k mono">not guessed at</p>
-          <p>Two independent versions of the reasoning run side by side on separate books,
-          scored against each other in real time before either one is trusted alone.</p>
         </div>
       </div>
     </div>
@@ -487,54 +492,108 @@
     <div class="trustintro">
       <p class="lower__label mono" data-reveal>Built to be checked, not believed</p>
       <p class="lede lede--tight" data-reveal style="--d:.04s">
-        The audience for a trading bot is skeptical, correctly. Four features exist purely
-        to make the system checkable.
+        A trading bot's audience is skeptical, correctly. So the number BOBCAT reports is
+        the one most systems would rather you didn't see.
       </p>
     </div>
 
-    <div class="honesty">
-      <!-- real vs headline equity -->
-      <article class="hcard hcard--wide" data-reveal style="--d:.06s">
-        <h3 class="hcard__t">Real equity vs. headline equity</h3>
-        <p>Most bots flatter their number by banking winners and quietly holding losers
+    <!-- ── the ledger: divergence chart + comparison ──────────────────────
+         The two curves are a hand-authored illustration of the mechanism —
+         a headline number that only climbs, against the mark-to-market value
+         that carries every open loss. Not a track record; see the caption and
+         the content-honesty note in README.md before changing any of it. -->
+    <article class="ledger" data-ledger data-reveal style="--d:.06s">
+      <h3 class="ledger__t">Two curves. <span class="dim">Only one is real.</span></h3>
+      <p class="ledger__s">
+        Most bots flatter their number by banking winners and quietly holding losers
         off-screen. BOBCAT shows both, always: the headline figure, and the true
-        mark-to-market value including every open loss.</p>
-        <div class="eqdemo" aria-hidden="true">
-          <p class="eqdemo__cap mono">ILLUSTRATIVE MECHANISM — NOT ACTUAL RESULTS</p>
-          <div class="eqrow">
-            <span class="eqrow__k mono">Headline equity</span>
-            <div class="eqbar"><i class="eqbar__fill eqbar__fill--flat"></i></div>
-          </div>
-          <div class="eqrow">
-            <span class="eqrow__k mono">Real equity <span class="dim">(mark-to-market)</span></span>
-            <div class="eqbar"><i class="eqbar__fill eqbar__fill--real"></i></div>
-          </div>
+        mark-to-market value including every open loss.
+      </p>
+
+      <figure class="diverge">
+        <figcaption class="diverge__cap mono">ILLUSTRATIVE MECHANISM — NOT ACTUAL RESULTS</figcaption>
+
+        <div class="diverge__readout mono" aria-hidden="true">
+          <!-- static values are the END of the curves, so a no-JS visitor sees a
+               readout that matches the finished chart; JS resets them to the
+               start and ticks them up as it draws -->
+          <span class="diverge__val diverge__val--head"><i></i>HEADLINE <b data-dv-head>128.6</b></span>
+          <span class="diverge__val diverge__val--real"><i></i>REAL <b data-dv-real>110.6</b></span>
+          <!-- narrow screens shrink the in-chart GAP annotation past legibility,
+               so below 640px it is hidden and shown here as real text instead -->
+          <span class="diverge__val diverge__val--gap">GAP <b data-dv-gap>17.9</b></span>
         </div>
-      </article>
 
-      <article class="hcard" data-reveal style="--d:.1s">
-        <h3 class="hcard__t">Forensic log</h3>
-        <p>Every trade is recorded with a full reasoning autopsy: what was read, what was
-        ruled, and why. Fully exportable.</p>
-        <div class="logdemo mono" aria-hidden="true">
-          <p><span class="dim">read</span> bullish, conf. 0.71</p>
-          <p><span class="dim">context</span> not priced in</p>
-          <p><span class="dim">ruling</span> long, sized 0.4×</p>
+        <svg class="diverge__svg" viewBox="0 0 660 190" role="img"
+             aria-label="Two equity curves diverging. A headline curve climbs in steps and never falls. Beneath it, the real mark-to-market curve rises too but dips with every open loss, ending well below. The widening gap between them is the value most systems never display.">
+          <defs>
+            <pattern id="dvhatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+              <line class="diverge__hatchline" x1="0" y1="0" x2="0" y2="7"/>
+            </pattern>
+            <clipPath id="dvclip"><rect data-dv-clip x="0" y="0" width="0" height="190"/></clipPath>
+          </defs>
+
+          <g class="diverge__grid" aria-hidden="true">
+            <path d="M20 60 H540 M20 100 H540 M20 140 H540"/>
+          </g>
+
+          <g class="diverge__plot" clip-path="url(#dvclip)">
+            <path class="diverge__gapfill" d="M20,150 L60,148 L100,138 L140,136 L180,124 L220,122 L260,108 L300,106 L340,92 L380,90 L420,74 L460,72 L500,58 L540,48 L540,112 L500,114 L460,130 L420,118 L380,136 L340,124 L300,140 L260,130 L220,146 L180,138 L140,150 L100,143 L60,149 L20,150 Z"/>
+            <path class="diverge__line diverge__line--head" data-dv-path-head d="M20,150 L60,148 L100,138 L140,136 L180,124 L220,122 L260,108 L300,106 L340,92 L380,90 L420,74 L460,72 L500,58 L540,48"/>
+            <path class="diverge__line diverge__line--real" data-dv-path-real d="M20,150 L60,149 L100,143 L140,150 L180,138 L220,146 L260,130 L300,140 L340,124 L380,136 L420,118 L460,130 L500,114 L540,112"/>
+          </g>
+
+          <!-- live scrub: only visible while the draw is playing -->
+          <g class="diverge__scrub" data-dv-scrub aria-hidden="true">
+            <line data-dv-scrubline x1="20" y1="24" x2="20" y2="176"/>
+            <circle class="diverge__dot diverge__dot--head" data-dv-dot-head cx="20" cy="150" r="3.5"/>
+            <circle class="diverge__dot diverge__dot--real" data-dv-dot-real cx="20" cy="150" r="3.5"/>
+          </g>
+
+          <!-- gap measurement, revealed once the curves finish drawing -->
+          <g class="diverge__note" data-dv-note aria-hidden="true">
+            <path class="diverge__bracket" d="M559,48 H571 M565,48 V112 M559,112 H571"/>
+            <text class="diverge__notek mono" x="580" y="76">GAP</text>
+            <text class="diverge__notev mono" x="580" y="92" data-dv-gap>17.9</text>
+          </g>
+        </svg>
+
+        <p class="diverge__foot">
+          That gap is what most bots never put on screen — every position still open and
+          still losing.
+        </p>
+      </figure>
+
+      <!-- comparison. Deliberately generic ("most bots"), never a named product,
+           and every row is about how a number is reported — not invented results. -->
+      <div class="lrows" data-lrows>
+        <div class="lrow lrow--head" aria-hidden="true">
+          <span class="lrow__k"></span>
+          <span class="lrow__bad mono">MOST BOTS</span>
+          <span class="lrow__good mono">BOBCAT</span>
         </div>
-      </article>
-
-      <article class="hcard" data-reveal style="--d:.14s">
-        <h3 class="hcard__t">AI-dead guard</h3>
-        <p>If the AI services fail, the system refuses to trade rather than guessing, and
-        shows a clear offline warning until service is restored.</p>
-      </article>
-
-      <article class="hcard" data-reveal style="--d:.18s">
-        <h3 class="hcard__t">Honest self-grading</h3>
-        <p>Every internal model reports its real accuracy and is treated as one weak input
-        — never as an oracle the rest defer to.</p>
-      </article>
-    </div>
+        <div class="lrow" data-lrow>
+          <span class="lrow__k">Open losses</span>
+          <span class="lrow__bad mono"><i aria-hidden="true">✗</i>hidden until closed</span>
+          <span class="lrow__good mono"><i aria-hidden="true">✓</i>shown live, always</span>
+        </div>
+        <div class="lrow" data-lrow>
+          <span class="lrow__k">The number you see</span>
+          <span class="lrow__bad mono"><i aria-hidden="true">✗</i>the flattering one</span>
+          <span class="lrow__good mono"><i aria-hidden="true">✓</i>both, side by side</span>
+        </div>
+        <div class="lrow" data-lrow>
+          <span class="lrow__k">Losing positions</span>
+          <span class="lrow__bad mono"><i aria-hidden="true">✗</i>held quietly off-screen</span>
+          <span class="lrow__good mono"><i aria-hidden="true">✓</i>marked to market every tick</span>
+        </div>
+        <div class="lrow" data-lrow>
+          <span class="lrow__k">The curve you're shown</span>
+          <span class="lrow__bad mono"><i aria-hidden="true">✗</i>only ever goes up</span>
+          <span class="lrow__good mono"><i aria-hidden="true">✓</i>includes what's still open</span>
+        </div>
+      </div>
+    </article>
   </div>
 </section>
 

@@ -629,51 +629,166 @@ table { border-collapse: collapse; width: 100%; }
 .lower__t { font-size: 16.5px; font-weight: 580; letter-spacing: -0.015em; margin-top: 6px; }
 .lower__sub { font-size: 13px; color: var(--muted); margin-top: 5px; margin-bottom: 14px; }
 
-.riskgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 20px; }
-.riskgrid li { display: flex; align-items: flex-start; gap: 10px; }
+/* Single column so each guard is a full-width row: the arming sweep below
+   reads as a scan across the whole card, which it can't do in a 250px cell. */
+.riskgrid { display: grid; grid-template-columns: 1fr; gap: 2px; }
+.riskgrid li {
+  position: relative; overflow: hidden;
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 7px 8px; border-radius: 5px;
+}
 .riskgrid .dash { flex: none; width: 12px; height: 1.5px; margin-top: 9px; background: var(--accent); }
 .riskgrid__t { font-size: 12.5px; color: var(--ink-2); line-height: 1.5; }
-@media (max-width: 480px) { .riskgrid { grid-template-columns: 1fr; } }
 
+/* an accent band sweeps the row once, then its ARMED tag lights */
+.riskgrid li::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 18%, transparent), transparent);
+  transform: translateX(-100%);
+}
+.riskgrid li.is-armed::after { animation: armsweep .75s var(--ease-out) forwards; }
+@keyframes armsweep { to { transform: translateX(100%); } }
+
+.arm {
+  margin-left: auto; align-self: flex-start; margin-top: 5px;
+  display: inline-flex; align-items: center; gap: 6px; flex: none;
+  font-size: 9px; letter-spacing: .12em; color: var(--muted-2);
+  opacity: 0; transition: opacity .35s var(--ease) .3s, color .35s var(--ease) .3s;
+}
+.arm::before {
+  content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--muted-2);
+  transition: background .35s var(--ease) .3s, box-shadow .35s var(--ease) .3s;
+}
+.riskgrid li.is-armed .arm { opacity: 1; color: var(--up); }
+.riskgrid li.is-armed .arm::before {
+  background: var(--up); box-shadow: 0 0 0 3px color-mix(in srgb, var(--up) 18%, transparent);
+}
+@media (max-width: 420px) { .arm { display: none; } }
+
+/* One card lives here now, so let it fill the column beside the taller risk
+   card and centre its content — otherwise it sits short and leaves the
+   right-hand side looking unfinished. */
 .lower__side { display: flex; flex-direction: column; gap: clamp(16px, 2vw, 22px); }
+.lower__side > .sidecard { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+@media (max-width: 860px) { .lower__side > .sidecard { display: block; } }
 .sidecard__t { font-size: 15px; font-weight: 580; letter-spacing: -0.012em; }
-.sidecard__k { font-size: 11px; color: var(--accent); margin-top: 5px; margin-bottom: 9px; letter-spacing: .02em; }
+.sidecard__k {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 11px; color: var(--accent); margin-top: 5px; margin-bottom: 9px; letter-spacing: .02em;
+}
 .sidecard p { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+/* "Always watching": a slow band travels the card so it reads as on watch
+   rather than as a static paragraph. */
+.sidecard--sentinel { position: relative; overflow: hidden; }
+.sidecard--sentinel::after {
+  content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 40%;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 9%, transparent), transparent);
+  transform: translateX(-120%);
+  animation: sentinelsweep 5.5s var(--ease) infinite;
+}
+@keyframes sentinelsweep { to { transform: translateX(320%); } }
+.sentinel__dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--up); flex: none;
+  animation: sentineldot 2.4s var(--ease) infinite;
+}
+@keyframes sentineldot {
+  0%,100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--up) 30%, transparent); }
+  50%     { box-shadow: 0 0 0 6px color-mix(in srgb, var(--up) 0%, transparent); }
+}
 
 /* ---------------------------------------------------------------- trust intro (folded into #how) */
 .trustintro { margin-top: clamp(28px, 3.6vw, 40px); padding-top: clamp(20px, 2.6vw, 28px); border-top: 1px solid var(--rule-soft); }
 .lede--tight { margin-top: 6px; }
 
-/* ---------------------------------------------------------------- honesty */
-.honesty {
+/* ---------------------------------------------------------------- the ledger
+   Divergence chart + comparison. The chart's reveal is driven from JS
+   (ledger() in main.js) by widening a clip rect left-to-right while a scrub
+   line tracks both curves; CSS here only holds the resting states. Without
+   JS the <noscript> block drops the clip entirely so the finished chart
+   shows; under reduced motion JS jumps straight to that same end state. */
+.ledger {
   margin-top: clamp(18px, 2.4vw, 26px);
-  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(14px, 1.8vw, 18px);
+  background: var(--card); border: 1px solid var(--rule); border-radius: 10px;
+  padding: clamp(18px, 2.4vw, 26px);
 }
-.hcard--wide { grid-column: 1 / -1; }
-@media (max-width: 700px) { .honesty { grid-template-columns: 1fr; } }
+.ledger__t { font-size: clamp(19px, 2.2vw, 25px); font-weight: 580; letter-spacing: -0.02em; }
+.ledger__s { margin-top: 9px; max-width: 68ch; font-size: 13.5px; color: var(--muted); line-height: 1.6; }
 
-.hcard {
-  background: var(--card); border: 1px solid var(--rule); border-radius: 8px; padding: clamp(16px, 2vw, 20px);
-  transition: border-color .25s var(--ease), transform .25s var(--ease);
+.diverge { margin: clamp(16px, 2vw, 22px) 0 0; }
+.diverge__cap { font-size: 9.5px; letter-spacing: .1em; color: var(--muted-2); }
+.diverge__readout { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 10px; font-size: 11px; }
+.diverge__val { display: inline-flex; align-items: center; gap: 7px; color: var(--muted-2); letter-spacing: .08em; }
+.diverge__val i { width: 14px; height: 2px; border-radius: 1px; flex: none; }
+.diverge__val b { font-weight: 600; letter-spacing: 0; font-variant-numeric: tabular-nums; }
+.diverge__val--head i { background: var(--muted-2); }
+.diverge__val--head b { color: var(--ink-2); }
+.diverge__val--real i { background: var(--accent); }
+.diverge__val--real b { color: var(--accent); }
+.diverge__val--gap { display: none; }
+.diverge__val--gap b { color: var(--accent); }
+@media (max-width: 640px) {
+  .diverge__val--gap { display: inline-flex; }
+  .diverge__note { display: none; }
+  .diverge__foot { margin-top: 8px; }
 }
-.hcard:hover { border-color: var(--accent-line); transform: translateY(-2px); }
-.hcard__t { font-size: 15.5px; font-weight: 580; letter-spacing: -0.012em; margin-bottom: 8px; }
-.hcard p { font-size: 13px; color: var(--muted); line-height: 1.55; }
 
-.eqdemo { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--rule-soft); max-width: 460px; }
-.eqdemo__cap { font-size: 9.5px; letter-spacing: .1em; color: var(--muted-2); margin-bottom: 12px; }
-.eqrow { display: flex; align-items: center; gap: 14px; margin-top: 9px; }
-.eqrow:first-of-type { margin-top: 0; }
-.eqrow__k { flex: 0 0 auto; font-size: 11.5px; color: var(--muted); width: 168px; }
-.eqbar { flex: 1; height: 8px; background: var(--surface-2); border-radius: 4px; overflow: hidden; }
-.eqbar__fill { display: block; height: 100%; border-radius: 4px; transform: scaleX(0); transform-origin: left; }
-.eqbar__fill--flat { background: var(--muted-2); --p: .82; }
-.eqbar__fill--real  { background: var(--accent); --p: .58; }
-.is-in .eqbar__fill { animation: barfill 1s var(--ease-out) forwards; animation-delay: .3s; }
-@keyframes barfill { to { transform: scaleX(var(--p)); } }
+.diverge__svg { width: 100%; height: auto; display: block; margin-top: 8px; overflow: visible; }
+.diverge__grid path { stroke: var(--rule-soft); stroke-width: 1; fill: none; }
+.diverge__hatchline { stroke: var(--accent); stroke-width: 1; opacity: .3; }
+.diverge__gapfill { fill: url(#dvhatch); stroke: none; }
+.diverge__line { fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.diverge__line--head { stroke: var(--muted-2); }
+.diverge__line--real { stroke: var(--accent); }
 
-.logdemo { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--rule-soft); font-size: 11.5px; line-height: 1.8; }
-.logdemo p { color: var(--ink-2); }
+.diverge__scrub { opacity: 0; transition: opacity .3s var(--ease); }
+.diverge__scrub.is-on { opacity: 1; }
+.diverge__scrub line { stroke: var(--accent); stroke-width: 1; stroke-dasharray: 2 3; opacity: .55; }
+.diverge__dot--head { fill: var(--muted-2); }
+.diverge__dot--real { fill: var(--accent); }
+
+.diverge__note { opacity: 0; transition: opacity .5s var(--ease); }
+.diverge__note.is-on { opacity: 1; }
+.diverge__bracket { stroke: var(--accent); stroke-width: 1.2; fill: none; }
+.diverge__notek { fill: var(--muted-2); font-size: 10px; letter-spacing: .1em; }
+.diverge__notev { fill: var(--accent); font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.diverge__foot { margin-top: 10px; font-size: 12.5px; color: var(--muted); line-height: 1.55; max-width: 60ch; }
+
+/* comparison rows */
+.lrows { margin-top: clamp(18px, 2.2vw, 24px); border-top: 1px solid var(--rule-soft); }
+.lrow {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr) minmax(0, 1.15fr);
+  gap: 10px 16px; align-items: center;
+  padding: 11px 4px; border-bottom: 1px solid var(--rule-soft);
+}
+.lrow--head { padding-block: 9px; }
+.lrow--head .lrow__bad, .lrow--head .lrow__good {
+  font-size: 9.5px; letter-spacing: .12em; color: var(--muted-2);
+}
+.lrow__k { font-size: 13px; color: var(--ink-2); }
+.lrow__bad, .lrow__good { display: inline-flex; align-items: baseline; gap: 8px; font-size: 11.5px; line-height: 1.45; }
+.lrow__bad { color: var(--muted); }
+.lrow__good { color: var(--ink-2); }
+.lrow__bad i, .lrow__good i { flex: none; font-style: normal; font-size: 11px; }
+.lrow__bad i { color: var(--down); }
+.lrow__good i { color: var(--up); }
+/* rows wipe in from the left in sequence once the block scrolls into view */
+.lrow[data-lrow] { opacity: 0; transform: translateX(-10px); transition: opacity .45s var(--ease-out), transform .45s var(--ease-out); }
+.lrows.is-in .lrow[data-lrow] { opacity: 1; transform: none; }
+.lrows.is-in .lrow[data-lrow]:nth-of-type(2) { transition-delay: .08s; }
+.lrows.is-in .lrow[data-lrow]:nth-of-type(3) { transition-delay: .16s; }
+.lrows.is-in .lrow[data-lrow]:nth-of-type(4) { transition-delay: .24s; }
+.lrows.is-in .lrow[data-lrow]:nth-of-type(5) { transition-delay: .32s; }
+.lrow[data-lrow]:hover { background: var(--surface); }
+.lrow[data-lrow]:hover .lrow__good { color: var(--accent); }
+
+@media (max-width: 640px) {
+  .lrow { grid-template-columns: 1fr 1fr; padding-block: 12px; }
+  .lrow__k { grid-column: 1 / -1; font-weight: 560; }
+  .lrow--head .lrow__k { display: none; }
+}
 
 /* ---------------------------------------------------------------- signup */
 .section--signup { padding-block: clamp(36px, 4.4vw, 60px); }
@@ -748,7 +863,12 @@ table { border-collapse: collapse; width: 100%; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
   [data-reveal] { opacity: 1; transform: none; }
-  .eqbar__fill { transform: scaleX(var(--p, 1)); }
+  /* ledger + risk layer land on their finished states, no sweeps */
+  .lrow[data-lrow] { opacity: 1; transform: none; }
+  .riskgrid li::after, .sidecard--sentinel::after { display: none; }
+  .sentinel__dot { animation: none; }
+  .arm { opacity: 1; color: var(--up); }
+  .arm::before { background: var(--up); }
   .candle, .wick { animation: none; transform: none; opacity: 1; }
   .marker { animation: none; opacity: 1; }
   .marker__dot { animation: none; }

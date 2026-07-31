@@ -263,6 +263,31 @@ hashes cannot be correlated across restarts.
   toggles a `.is-nudging` class that sets `scroll-snap-type: none` for its
   duration so the peek actually holds, then restores normal snapping
   afterward for real swipes.
+- **The ledger** (`.ledger`, in `#how`) is the trust centrepiece: a divergence
+  chart plus a `MOST BOTS` / `BOBCAT` comparison. Two hand-authored SVG curves
+  — a grey headline number that only ever climbs, and the amber mark-to-market
+  value that dips with every open loss — with a hatched fill between them and a
+  live `GAP` bracket. `ledger()` in `main.js` reveals it by widening a clip rect
+  left-to-right while a scrub line rides both curves and the readout ticks;
+  curve points are **parsed out of the rendered `d` attributes** rather than
+  duplicated in JS, so the numbers can't drift from the shapes on screen. The
+  static readout values in the HTML are the *end* of the curves so the no-JS
+  view is self-consistent; with JS, `paint(X0)` winds them back at init. Below
+  640px the in-chart `GAP` annotation is too small to read, so it's hidden and
+  a `.diverge__val--gap` readout takes over — JS writes to both. Reduced motion
+  jumps to the end state; `<noscript>` drops the clip so the finished chart
+  shows.
+  This replaced four cards (forensic log, AI-dead guard, honest self-grading,
+  proven-against-a-control) that described internals a competitor could copy —
+  don't reintroduce that level of detail here.
+- **The risk layer arms itself.** Each guard in `.riskgrid` is a full-width row
+  (single column by design — the sweep can't read across a 250px cell) that
+  gets an accent band sweeping across it and an `ARMED` tag lighting green,
+  staggered ~130ms apart, once the card scrolls in (`riskArm()` in `main.js`).
+  One pass, then it stays armed. "Always watching" gets a slow band travelling
+  the card plus a pulsing dot, so the pair reads as live rather than as two
+  static paragraphs. Both fall back to the armed/lit state under reduced motion
+  and no-JS.
 - **The ticker** (`.ticker`) is ambient wallpaper: public tickers with
   illustrative movement, unconnected to any BOBCAT trade or result. It's a CSS
   `translateX` loop, paused off screen via `IntersectionObserver` and disabled
@@ -297,12 +322,21 @@ This page makes no profit, return, or win-rate claims anywhere — none of that
 is established for a system currently in paper trading, and inventing it would
 be false. The only numbers on the page are qualitative product facts or figures
 explicitly labelled illustrative: the chart's entries/exits and R-multiples
-(captioned "illustrative replay — not live data, not actual trading results"),
-the real-vs-headline equity bars, and the forensic-log excerpt. The footer
-states plainly that this is paper trading and that nothing here is financial
-advice. Keep it that way — don't add real performance figures later without the
-same care, and don't let the chart's illustrative numbers drift toward looking
-like a genuine track record.
+(captioned "illustrative replay — not live data, not actual trading results")
+and the ledger's two equity curves with their index values and GAP figure
+(captioned "illustrative mechanism — not actual results"). The footer states
+plainly that this is paper trading and that nothing here is financial advice.
+Keep it that way — don't add real performance figures later without the same
+care, and don't let the illustrative numbers drift toward looking like a
+genuine track record.
+
+**On the comparison ledger.** The `MOST BOTS` / `BOBCAT` rows are the one
+place this page makes a competitive claim, so they are deliberately fenced in:
+never a named product (always the generic "most bots"), and every row is about
+*how a number is reported* — a claim the page already makes in prose and can
+stand behind — never about returns, win rates, or anything that would need
+evidence we don't have. If you add rows, hold that line. A comparison table is
+the easiest thing on a landing page to quietly turn indefensible.
 
 Note on the chart's three example trades: all three are currently wins
 (`+2.1R`, `+0.5R`, `+1.3R`). This is a known trade-off — an all-win

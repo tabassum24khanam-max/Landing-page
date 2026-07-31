@@ -573,6 +573,153 @@
     observer.observe(track);
   })();
 
+  /* ------------------------------------------------------------ the ledger
+     Draws the two equity curves left-to-right by widening the clip rect,
+     with a scrub line tracking both and the readout ticking as it goes,
+     then reveals the GAP measurement. Curve points are parsed straight
+     out of the rendered paths, so the numbers can never drift from the
+     shapes actually on screen. Illustrative mechanism, not a track
+     record — see the caption in index.html. */
+  (function ledger() {
+    var root = $('[data-ledger]');
+    if (!root) return;
+
+    var clip = $('[data-dv-clip]', root);
+    var scrub = $('[data-dv-scrub]', root);
+    var scrubLine = $('[data-dv-scrubline]', root);
+    var note = $('[data-dv-note]', root);
+    var dotHead = $('[data-dv-dot-head]', root);
+    var dotReal = $('[data-dv-dot-real]', root);
+    var outHead = $('[data-dv-head]', root);
+    var outReal = $('[data-dv-real]', root);
+    // two of these: the in-chart annotation and the readout fallback that
+    // takes over on narrow screens — both stay in sync
+    var outGaps = $$('[data-dv-gap]', root);
+    var pathHead = $('[data-dv-path-head]', root);
+    var pathReal = $('[data-dv-path-real]', root);
+    var rows = $('[data-lrows]');
+    if (!clip || !pathHead || !pathReal) return;
+
+    function pointsOf(path) {
+      var raw = path.getAttribute('d').match(/-?[\d.]+\s*,\s*-?[\d.]+/g) || [];
+      return raw.map(function (pair) {
+        var xy = pair.split(',');
+        return { x: parseFloat(xy[0]), y: parseFloat(xy[1]) };
+      });
+    }
+    var ptsHead = pointsOf(pathHead);
+    var ptsReal = pointsOf(pathReal);
+    if (!ptsHead.length || !ptsReal.length) return;
+
+    var X0 = ptsHead[0].x;
+    var X1 = ptsHead[ptsHead.length - 1].x;
+    var VIEW_W = 660;
+
+    // y at an arbitrary x, linearly interpolated between the two
+    // neighbouring plotted points
+    function yAt(pts, x) {
+      if (x <= pts[0].x) return pts[0].y;
+      var last = pts[pts.length - 1];
+      if (x >= last.x) return last.y;
+      for (var i = 1; i < pts.length; i++) {
+        if (x <= pts[i].x) {
+          var a = pts[i - 1], b = pts[i];
+          var t = (x - a.x) / (b.x - a.x);
+          return a.y + (b.y - a.y) * t;
+        }
+      }
+      return last.y;
+    }
+
+    // Curves are drawn in viewBox units; this maps a y back to the index
+    // value shown in the readout. Baseline y=150 reads as 100.0.
+    function valueAt(y) { return 100 + (150 - y) * 0.28; }
+    function fmt(n) { return n.toFixed(1); }
+
+    function paint(x) {
+      var cx = Math.max(X0, Math.min(X1, x));
+      var yh = yAt(ptsHead, cx);
+      var yr = yAt(ptsReal, cx);
+      if (scrubLine) { scrubLine.setAttribute('x1', cx); scrubLine.setAttribute('x2', cx); }
+      if (dotHead) { dotHead.setAttribute('cx', cx); dotHead.setAttribute('cy', yh); }
+      if (dotReal) { dotReal.setAttribute('cx', cx); dotReal.setAttribute('cy', yr); }
+      var vh = valueAt(yh), vr = valueAt(yr);
+      if (outHead) outHead.textContent = fmt(vh);
+      if (outReal) outReal.textContent = fmt(vr);
+      var gapText = fmt(vh - vr);
+      outGaps.forEach(function (el) { el.textContent = gapText; });
+    }
+
+    function finish() {
+      clip.setAttribute('width', VIEW_W);
+      paint(X1);
+      if (scrub) scrub.classList.remove('is-on');
+      if (note) note.classList.add('is-on');
+      if (rows) rows.classList.add('is-in');
+    }
+
+    if (reduced || !('IntersectionObserver' in window)) { finish(); return; }
+
+    // The static markup carries the END values so the no-JS view matches its
+    // finished chart. With JS the chart starts blank, so wind the readout
+    // back to the start now rather than leaving it reading the final figure
+    // above an empty plot until the observer fires.
+    paint(X0);
+
+    var DUR = 2200;
+    var started = false;
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting || started) return;
+        started = true;
+        observer.disconnect();
+
+        if (scrub) scrub.classList.add('is-on');
+        var begin = null;
+        (function step(now) {
+          if (begin === null) begin = now;
+          var p = Math.min(1, (now - begin) / DUR);
+          var e = 1 - Math.pow(1 - p, 3);      // ease-out cubic
+          clip.setAttribute('width', e * VIEW_W);
+          paint(e * VIEW_W);
+          if (p < 1) { raf(step); return; }
+          finish();
+        })(performance.now());
+
+        // rows come in under the chart while it is still drawing
+        setTimeout(function () { if (rows) rows.classList.add('is-in'); }, 700);
+      });
+    }, { threshold: 0.25 });
+    observer.observe(root);
+  })();
+
+  /* ------------------------------------------------------------ risk arming
+     Each guard in the risk layer sweeps and flips to ARMED in sequence when
+     the card scrolls in, so "mechanical, always on" is shown rather than
+     asserted. One pass, then it stays armed. */
+  (function riskArm() {
+    var grid = $('[data-riskgrid]');
+    if (!grid) return;
+    var items = $$('[data-arm]', grid);
+    if (!items.length) return;
+
+    function armAll() { items.forEach(function (li) { li.classList.add('is-armed'); }); }
+    if (reduced || !('IntersectionObserver' in window)) { armAll(); return; }
+
+    var started = false;
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting || started) return;
+        started = true;
+        observer.disconnect();
+        items.forEach(function (li, i) {
+          setTimeout(function () { li.classList.add('is-armed'); }, i * 130);
+        });
+      });
+    }, { threshold: 0.3 });
+    observer.observe(grid);
+  })();
+
   /* ------------------------------------------------------------ direct mail
      Points "email us directly" at a real inbox without exposing it to
      scraping in the raw page source. Change the address in one place. */
