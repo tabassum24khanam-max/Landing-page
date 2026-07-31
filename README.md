@@ -246,6 +246,23 @@ hashes cannot be correlated across restarts.
   immediately; skipped entirely under reduced motion. Programmatic clicks
   set `isTrusted=false`, so the user-click listener that stops the cycle
   doesn't fire from our own dispatches (`autoCycleTabs()` in `main.js`).
+- **The "how it works" agent cards are a swipeable carousel below 860px.**
+  Three full-height cards stacked vertically made that section a long scroll
+  on mobile before the risk layer even appeared. Below 860px `.agents`
+  becomes a horizontal, scroll-snapped strip (`flex` + `scroll-snap-type: x
+  mandatory`) with each card sized to ~84% width so the next one visibly
+  peeks in at the edge. The first time it scrolls into view, `main.js`'s
+  `agentsSwipeHint()` nudges it right ~56px and back once — since nothing
+  about a horizontally-scrolling block signals itself, this is what tells a
+  visitor it swipes before they've had to guess. Cancels immediately on any
+  real touch/wheel input, fires once, and never runs at desktop widths where
+  the cards are back to a static 3-column grid. **Gotcha:** with `scroll-
+  snap-type: mandatory` active, a plain `scrollTo()` nudge gets fought by
+  the browser — it either snaps back to 0 immediately or jumps straight to
+  the next card instead of resting at the requested offset. The nudge
+  toggles a `.is-nudging` class that sets `scroll-snap-type: none` for its
+  duration so the peek actually holds, then restores normal snapping
+  afterward for real swipes.
 - **The ticker** (`.ticker`) is ambient wallpaper: public tickers with
   illustrative movement, unconnected to any BOBCAT trade or result. It's a CSS
   `translateX` loop, paused off screen via `IntersectionObserver` and disabled

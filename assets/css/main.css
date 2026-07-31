@@ -582,7 +582,28 @@ table { border-collapse: collapse; width: 100%; }
   display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px;
   background: var(--rule); border: 1px solid var(--rule); border-radius: 8px; overflow: hidden;
 }
-@media (max-width: 860px) { .agents { grid-template-columns: 1fr; } }
+/* Below 860px the three cards were stacked full-height, turning "How it
+   works" into a long vertical scroll before the risk layer even shows up.
+   Swipeable instead: a horizontal, snap-aligned strip with the next card
+   peeking in at ~14% so there's a visible cue something continues past the
+   edge, reinforced by a one-time nudge scroll (see agentsSwipeHint() in
+   main.js) the first time the section comes into view. */
+@media (max-width: 860px) {
+  .agents {
+    grid-template-columns: none;
+    display: flex; gap: 10px;
+    overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
+    background: none; border: none; border-radius: 0;
+    scrollbar-width: none; padding-bottom: 2px;
+  }
+  .agents::-webkit-scrollbar { display: none; }
+  .agent { flex: 0 0 84%; scroll-snap-align: start; border: 1px solid var(--rule-soft); border-radius: 8px; }
+  /* mandatory snap fights a small scrollTo nudge — any attempt to rest
+     partway between two cards gets forced to whichever snap point is
+     "closer" (often the next card, not back where it started), so the
+     JS nudge in agentsSwipeHint() suspends snapping for its duration. */
+  .agents.is-nudging { scroll-snap-type: none; }
+}
 .agent { background: var(--card); padding: clamp(16px, 2vw, 22px); transition: background .25s var(--ease); }
 .agent:hover { background: var(--surface); }
 .agent__n { font-size: 10.5px; letter-spacing: .1em; color: var(--accent); margin-bottom: 10px; }

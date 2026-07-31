@@ -523,6 +523,56 @@
     observer.observe(root);
   })();
 
+  /* ------------------------------------------------------------ agents
+     swipe hint. Below 860px the three "how it works" cards are a
+     horizontal, scroll-snapped strip (see .agents in main.css) instead of
+     a long vertical stack. Nothing about a horizontally scrolling block
+     signals itself, so the first time it comes into view we nudge it
+     right and back once — just enough to reveal the next card peeking at
+     the edge — so a visitor knows it swipes before they've had to guess.
+     Cancels immediately on any real touch/wheel input, runs once, and
+     never fires above the 860px breakpoint where the cards aren't a
+     carousel at all. */
+  (function agentsSwipeHint() {
+    if (reduced) return;
+    var track = $('.agents');
+    if (!track || !('IntersectionObserver' in window)) return;
+
+    function isCarousel() { return window.matchMedia('(max-width: 860px)').matches; }
+
+    var interacted = false;
+    function markInteracted() { interacted = true; }
+    track.addEventListener('touchstart', markInteracted, { passive: true, once: true });
+    track.addEventListener('wheel', markInteracted, { passive: true, once: true });
+
+    var fired = false;
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting || fired) return;
+        fired = true;
+        observer.disconnect();
+        if (!isCarousel()) return;
+
+        setTimeout(function () {
+          if (interacted || !isCarousel()) return;
+          // Suspend snap for the nudge: with scroll-snap-type: mandatory
+          // active, the browser forces any small scrollTo to fully commit
+          // to the nearer snap point instead of resting where asked, which
+          // either cancels the nudge outright or jumps straight to card 2.
+          track.classList.add('is-nudging');
+          var start = track.scrollLeft;
+          track.scrollTo({ left: start + 56, behavior: 'smooth' });
+          setTimeout(function () {
+            if (interacted) { track.classList.remove('is-nudging'); return; }
+            track.scrollTo({ left: start, behavior: 'smooth' });
+            setTimeout(function () { track.classList.remove('is-nudging'); }, 500);
+          }, 500);
+        }, 500);
+      });
+    }, { threshold: 0.5 });
+    observer.observe(track);
+  })();
+
   /* ------------------------------------------------------------ direct mail
      Points "email us directly" at a real inbox without exposing it to
      scraping in the raw page source. Change the address in one place. */
